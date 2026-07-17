@@ -1,0 +1,42 @@
+{
+  "name": "x402-stacks-backend",
+  "version": "1.0.0",
+  "description": "x402-stacks payment-gated API server for autonomous AI agents",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "tsx src/index.ts",
+    "build": "tsc",
+    "start:prod": "node dist/index.js"
+  },
+  "keywords": [
+    "x402",
+    "stacks",
+    "ai",
+    "micropayments",
+    "blockchain"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "axios": "^1.13.5",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "groq-sdk": "^0.37.0",
+    "helmet": "^8.0.0",
+    "morgan": "^1.10.0",
+    "x402-stacks": "latest",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/morgan": "^1.9.9",
+    "@types/node": "^22.0.0",
+    "typescript": "^5.7.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "name": "x402-agent",
+  "version": "1.0.0",
+  "description": "Autonomous AI agent that discovers and pays for x402-protected API tools",
+  "type": "module",
+  "scripts": {
+    "start": "tsx src/agent.ts",
+    "dev": "tsx watch src/agent.ts",
+    "test:client": "tsx src/test-client.ts",
+    "generate-wallet": "tsx src/generate-wallet.ts",
+    "build": "tsc",
+    "start:prod": "node dist/agent.js"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "axios": "^1.7.9",
+    "dotenv": "^16.4.7",
+    "groq-sdk": "^0.37.0",
+    "x402-stacks": "latest"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "name": "x402-autonomous-agent",
+  "version": "1.0.0",
+  "description": "Autonomous AI agent on Stacks blockchain that discovers and pays for premium API tools using x402-stacks HTTP 402 micropayments",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "agent",
+    "frontend"
+  ],
+  "scripts": {
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:agent": "cd agent && npm start",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "test:client": "cd agent && npm run test:client",
+    "install:all": "cd backend && npm install && cd ../agent && npm install && cd ../frontend && npm install"
+  },
+  "keywords": [
+    "x402",
+    "stacks",
+    "ai-agents",
+    "blockchain",
+    "micropayments",
+    "http402",
+    "web3"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}

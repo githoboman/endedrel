@@ -1,0 +1,63 @@
+# Dependencies
+node_modules/
+.npm
+/backend/node_modules/
+/frontend/node_modules/
+/agent/node_modules/
+
+# Build output
+dist/
+/backend/dist/
+/.next/
+/frontend/.next/
+out/
+/frontend/out/
+*.tsbuildinfo
+
+# Environment
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Project Specific
+digest.txt
+hackathon-details.md
+todo.md
+backend.log
+frontend.log
+.cursor/
+
+# Secrets
+*.pem
+*.key
+wallet.json
+agent-wallet.json
+keyfile.json
+.env
+.env.local
+node_modules
+.next
+
+# Environment
+azure-cli-env/
+promote/
+promote/*
