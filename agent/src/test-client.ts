@@ -10,21 +10,30 @@
 
 import axios from 'axios';
 import dotenv from 'dotenv';
-import {
-  wrapAxiosWithPayment,
-  privateKeyToAccount,
-  decodePaymentResponse,
-} from 'x402-stacks';
+import { privateKeyToAccount } from 'viem/accounts';
 
 dotenv.config({ path: '../.env' });
 dotenv.config(); // also load local .env
+
+// Payment settles server-side via the GOAT x402 order flow; the client just
+// passes its payer address. Defensive parser for any payment-response header.
+function decodePaymentResponse(raw: string): { transaction: string; payer?: string; network?: string } | null {
+  if (!raw) return null;
+  try {
+    const p = typeof raw === 'string' ? JSON.parse(raw) : raw;
+    const tx = p.transaction || p.tx_hash || p.order_id;
+    return tx ? { transaction: tx, payer: p.payer, network: p.network } : null;
+  } catch {
+    return null;
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Configuration
 // ---------------------------------------------------------------------------
 
 const PRIVATE_KEY = process.env.AGENT_PRIVATE_KEY;
-const SERVER_URL = process.env.AGENT_SERVER_URL || 'http://localhost:3001';
+const SERVER_URL = process.env.AGENT_SERVER_URL || 'http://localhost:4002';
 
 if (!PRIVATE_KEY) {
   console.error(
@@ -33,12 +42,14 @@ if (!PRIVATE_KEY) {
   process.exit(1);
 }
 
-// Create x402-aware HTTP client
-const account = privateKeyToAccount(PRIVATE_KEY, 'testnet');
-const api = wrapAxiosWithPayment(
-  axios.create({ baseURL: SERVER_URL }),
-  account
+// Plain HTTP client; payment is settled server-side via GOAT x402 orders.
+const account = privateKeyToAccount(
+  (PRIVATE_KEY.startsWith('0x') ? PRIVATE_KEY : `0x${PRIVATE_KEY}`) as `0x${string}`
 );
+const api = axios.create({
+  baseURL: SERVER_URL,
+  headers: { 'x-payer-address': account.address },
+});
 
 console.log('');
 console.log('================================================================');
@@ -77,7 +88,7 @@ async function testHealth() {
 }
 
 async function testWeather() {
-  console.log('[2/4] Testing POST /api/weather (0.01 STX)...');
+  console.log('[2/4] Testing POST /api/weather (0.001 USDC)...');
   try {
     const res = await api.post('/api/weather', { city: 'Tokyo' });
     console.log('  Status:', res.status);
@@ -90,10 +101,10 @@ async function testWeather() {
 }
 
 async function testSummarize() {
-  console.log('[3/4] Testing POST /api/summarize (0.03 STX)...');
+  console.log('[3/4] Testing POST /api/summarize (0.003 USDC)...');
   try {
     const res = await api.post('/api/summarize', {
-      text: 'The x402 protocol enables automatic HTTP-level payments for APIs, AI agents, and digital services using STX or sBTC tokens on Stacks. It works by returning a 402 Payment Required status when a client requests a protected resource. The client then signs a transaction and sends it via a facilitator, which broadcasts it to the blockchain. Once confirmed, the server grants access to the resource. This enables machine-to-machine micropayments without subscriptions or API keys.',
+      text: 'The x402 protocol enables automatic HTTP-level payments for APIs, AI agents, and digital services using USDC on GOAT Network. It works by returning a 402 Payment Required status when a client requests a protected resource. The client then signs a transaction and sends it via a facilitator, which broadcasts it to the blockchain. Once confirmed, the server grants access to the resource. This enables machine-to-machine micropayments without subscriptions or API keys.',
       maxLength: 100,
     });
     console.log('  Status:', res.status);
@@ -106,7 +117,7 @@ async function testSummarize() {
 }
 
 async function testMathSolve() {
-  console.log('[4/4] Testing POST /api/math-solve (0.05 STX)...');
+  console.log('[4/4] Testing POST /api/math-solve (0.005 USDC)...');
   try {
     const res = await api.post('/api/math-solve', {
       expression: '(42 * 3) + (100 / 4) - 7',

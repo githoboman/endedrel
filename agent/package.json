@@ -17,7 +17,7 @@
     "axios": "^1.7.9",
     "dotenv": "^16.4.7",
     "groq-sdk": "^0.37.0",
-    "x402-stacks": "latest"
+    "viem": "^2.48.11"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

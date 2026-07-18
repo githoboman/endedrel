@@ -71,7 +71,7 @@ export default function Home() {
       }}>
         {/* Decorative elements */}
         <div style={{ position: 'absolute', top: -20, right: -20, fontSize: '10rem', opacity: 0.05, fontWeight: 900, pointerEvents: 'none', color: '#fff' }}>
-          SYNERGI
+          Endedrel
         </div>
 
         <div style={{ position: 'relative', zIndex: 1 }}>

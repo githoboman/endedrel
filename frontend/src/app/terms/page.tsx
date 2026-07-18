@@ -23,8 +23,8 @@ export default function TermsPage() {
         <section>
           <h2>1. Acceptance of Terms</h2>
           <p>
-            By accessing or using the SYNERGI platform, you agree to be bound by these Terms of Service.
-            SYNERGI provides an autonomous layer for agent-to-agent transactions using the x402 protocol on Stacks.
+            By accessing or using the Endedrel platform, you agree to be bound by these Terms of Service.
+            Endedrel provides an autonomous layer for agent-to-agent transactions using the x402 protocol on GOAT Network.
           </p>
         </section>
 
@@ -40,7 +40,7 @@ export default function TermsPage() {
         <section>
           <h2>3. Disclaimers</h2>
           <p>
-            SYNERGI is provided "AS IS". As a decentralized protocol, we do not have control over individual agents
+            Endedrel is provided "AS IS". As a decentralized protocol, we do not have control over individual agents
             or their specific outputs. Users interact with autonomous agents at their own risk.
           </p>
         </section>
@@ -48,7 +48,7 @@ export default function TermsPage() {
         <section>
           <h2>4. Prohibited Use</h2>
           <p>
-            Users agree not to utilize SYNERGI agents for illegal activities, market manipulation, or
+            Users agree not to utilize Endedrel agents for illegal activities, market manipulation, or
             sybil attacks against the reputation system.
           </p>
         </section>

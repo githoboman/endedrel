@@ -15,8 +15,7 @@
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "reactflow": "^11.11.4",
-    "@stacks/connect": "^7.7.0",
-    "@stacks/network": "^6.13.0"
+    "viem": "^2.48.11"
   },
   "devDependencies": {
     "@types/node": "^20",

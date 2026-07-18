@@ -2,38 +2,46 @@
 
 import React, { useState, useEffect } from 'react';
 
-const AGENT_PRIVATE_KEY = process.env.NEXT_PUBLIC_AGENT_PRIVATE_KEY || '';
+// Public server address that receives payments (EVM, 0x...). Safe to expose.
 const SERVER_ADDRESS = process.env.NEXT_PUBLIC_SERVER_ADDRESS || '';
+const NETWORK = (process.env.NEXT_PUBLIC_GOAT_NETWORK || 'testnet') as 'testnet' | 'mainnet';
+const RPC_URL =
+  NETWORK === 'mainnet'
+    ? 'https://rpc.goat.network'
+    : 'https://rpc.testnet3.goat.network';
 
 export default function WalletInfo() {
-  const shortAddr = (addr: string) => `${addr.slice(0, 8)}…${addr.slice(-6)}`;
-  const shortKey = (key: string) => `${key.slice(0, 6)}…${key.slice(-4)}`;
+  const shortAddr = (addr: string) => (addr ? `${addr.slice(0, 8)}…${addr.slice(-6)}` : '—');
   const [balance, setBalance] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!SERVER_ADDRESS) {
+      setBalance('---');
+      return;
+    }
     const fetchBalance = async () => {
+      const controller = new AbortController();
+      const id = setTimeout(() => controller.abort(), 5000);
       try {
-        // Safe fetch with timeout
-        const controller = new AbortController();
-        const id = setTimeout(() => controller.abort(), 5000);
-
-        try {
-          const res = await fetch(`https://api.testnet.hiro.so/extended/v1/address/${SERVER_ADDRESS}/balances`, {
-            signal: controller.signal
-          });
-          clearTimeout(id);
-
-          if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-          const data = await res.json();
-          const stx = data.stx.balance; // MicroSTX
-          setBalance((parseInt(stx) / 1000000).toFixed(2));
-        } catch (innerErr) {
-          clearTimeout(id);
-          throw innerErr;
-        }
-      } catch (e) {
-        // Suppress network errors to avoid console spam, just update UI state
+        // Native BTC balance on GOAT via JSON-RPC eth_getBalance.
+        const res = await fetch(RPC_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            jsonrpc: '2.0',
+            id: 1,
+            method: 'eth_getBalance',
+            params: [SERVER_ADDRESS, 'latest'],
+          }),
+          signal: controller.signal,
+        });
+        clearTimeout(id);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        const wei = BigInt(data.result ?? '0x0'); // 18 decimals
+        setBalance((Number(wei) / 1e18).toFixed(4));
+      } catch {
+        clearTimeout(id);
         setBalance('---');
       }
     };
@@ -57,11 +65,11 @@ export default function WalletInfo() {
           boxShadow: '0 0 6px rgba(255,133,75,0.6)',
         }} />
         <span style={{ fontSize: '0.6rem', color: '#FF854B', fontWeight: 600, fontFamily: 'var(--font-mono)' }}>
-          TESTNET
+          {NETWORK === 'mainnet' ? 'GOAT MAINNET' : 'GOAT TESTNET'}
         </span>
       </div>
 
-      {/* Server Address */}
+      {/* Server Address + native balance */}
       <div style={{
         padding: '4px 10px', borderRadius: 8,
         background: 'rgba(255,255,255,0.03)',
@@ -74,23 +82,8 @@ export default function WalletInfo() {
         }}>
           {shortAddr(SERVER_ADDRESS)}
           <span style={{ marginLeft: 6, color: 'var(--accent-primary)', fontWeight: 700 }}>
-            {balance ? `${balance} STX` : '...'}
+            {balance ? `${balance} BTC` : '...'}
           </span>
-        </div>
-      </div>
-
-      {/* Agent Key */}
-      <div style={{
-        padding: '4px 10px', borderRadius: 8,
-        background: 'rgba(99,102,241,0.06)',
-        border: '1px solid rgba(99,102,241,0.15)',
-      }}>
-        <div style={{ fontSize: '0.5rem', color: 'var(--text-muted)', marginBottom: 1 }}>Agent Key</div>
-        <div style={{
-          fontSize: '0.62rem', color: 'var(--accent-primary)',
-          fontFamily: 'var(--font-mono)',
-        }}>
-          {shortKey(AGENT_PRIVATE_KEY)}
         </div>
       </div>
     </div>

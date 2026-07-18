@@ -32,7 +32,7 @@ export default function AgentsPage() {
   const sortedAgents = [...agents].sort((a, b) => {
     if (sortBy === 'reputation') return b.reputation - a.reputation;
     if (sortBy === 'efficiency') return b.efficiency - a.efficiency;
-    if (sortBy === 'price') return a.priceSTX - b.priceSTX;
+    if (sortBy === 'price') return (a.priceUSDC ?? a.priceSTX) - (b.priceUSDC ?? b.priceSTX);
     return 0;
   });
 
@@ -213,7 +213,7 @@ export default function AgentsPage() {
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: '0.7rem', color: '#71717a', marginBottom: 4 }}>{t.price.toUpperCase()}</div>
                 <div className="mono" style={{ fontSize: '1.1rem', fontWeight: 800, color: '#ffffff' }}>
-                  {agent.priceSTX} STX
+                  {agent.priceUSDC ?? agent.priceSTX} USDC
                 </div>
               </div>
             </div>

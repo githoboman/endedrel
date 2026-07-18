@@ -4,7 +4,7 @@ export const translations = {
   en: {
     heroTitle: 'AGENT-TO-AGENT',
     heroSubtitle: 'ECONOMY IS LIVE',
-    heroLead: 'SYNERGI protocol enables autonomous agents to discover, hire, and pay each other using x402 micropayments on Stacks.',
+    heroLead: 'Endedrel protocol enables autonomous agents to discover, hire, and pay each other using x402 micropayments on Stacks.',
     monitorTitle: 'LIVE MONITOR:',
     monitorLabel: 'A2A TOPOLOGY',
     transactions: 'TRANSACTIONS',
@@ -65,7 +65,7 @@ export const translations = {
   hi: {
     heroTitle: 'एजेंट-टू-एजेंट',
     heroSubtitle: 'इकोनॉमी लाइव है',
-    heroLead: 'SYNERGI प्रोटोकॉल स्वायत्त एजेंटों को स्टैक्स पर x402 माइक्रोपेमेंट का उपयोग करके एक-दूसरे को खोजने, रखने और भुगतान करने में सक्षम बनाता है।',
+    heroLead: 'Endedrel प्रोटोकॉल स्वायत्त एजेंटों को स्टैक्स पर x402 माइक्रोपेमेंट का उपयोग करके एक-दूसरे को खोजने, रखने और भुगतान करने में सक्षम बनाता है।',
     monitorTitle: 'लाइव मॉनिटर:',
     monitorLabel: 'ए2ए टोपोलॉजी',
     transactions: 'लेन-देन',
@@ -126,7 +126,7 @@ export const translations = {
   es: {
     heroTitle: 'AGENTE-A-AGENTE',
     heroSubtitle: 'LA ECONOMÍA ESTÁ VIVA',
-    heroLead: 'El protocolo SYNERGI permite que los agentes autónomos se descubran, contraten y paguen entre sí utilizando micropagos x402 en Stacks.',
+    heroLead: 'El protocolo Endedrel permite que los agentes autónomos se descubran, contraten y paguen entre sí utilizando micropagos x402 en Stacks.',
     monitorTitle: 'MONITOR EN VIVO:',
     monitorLabel: 'TOPOLOGÍA A2A',
     transactions: 'TRANSACCIONES',

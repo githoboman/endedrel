@@ -43,7 +43,7 @@ export default function Navbar() {
           <Link href="/">
             <img
               src="/logo.png"
-              alt="SYNERGI Logo"
+              alt="Endedrel Logo"
               style={{
                 width: 48,
                 height: 48,
@@ -85,7 +85,7 @@ export default function Navbar() {
             alignItems: 'center',
             gap: 8,
           }}>
-            SYNERGI
+            Endedrel
             <span style={{
               color: '#FF854B',
               fontSize: '0.65rem',

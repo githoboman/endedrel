@@ -101,7 +101,7 @@ export default function EconomyGraph({ refreshTrigger = 0 }: { refreshTrigger?: 
           from: p.isA2A ? (p.payer || 'manager') : 'manager',
           to: p.endpoint ? agentIdFromEndpoint(p.endpoint) : 'unknown',
           amount: p.amount || '0',
-          token: p.token || 'STX',
+          token: p.token || 'USDC',
           isA2A: p.isA2A || false,
           timestamp: p.timestamp || Date.now(),
           active: Date.now() - (p.timestamp || 0) < 10000,
@@ -248,7 +248,7 @@ export default function EconomyGraph({ refreshTrigger = 0 }: { refreshTrigger?: 
         <div style={{ display: 'flex', gap: 20 }}>
           {[
             { label: 'Payments', value: stats.totalPayments, color: '#06b6d4' },
-            { label: 'Volume', value: `${stats.totalVolume} STX`, color: '#FF854B' },
+            { label: 'Volume', value: `${stats.totalVolume} USDC`, color: '#FF854B' },
             { label: 'A2A Hires', value: stats.a2aCount, color: '#f59e0b' },
             { label: 'Agents', value: stats.activeAgents, color: '#FF854B' },
           ].map(s => (

@@ -1,0 +1,28 @@
+{
+  "name": "endedrel-contracts",
+  "version": "1.0.0",
+  "description": "Endedrel Agent Registry — Solidity contracts for GOAT Network",
+  "private": true,
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "deploy:testnet": "hardhat run scripts/deploy.ts --network goatTestnet",
+    "deploy:mainnet": "hardhat run scripts/deploy.ts --network goatMainnet"
+  },
+  "keywords": [
+    "goat-network",
+    "x402",
+    "ai-agents",
+    "solidity",
+    "evm"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "dotenv": "^16.4.7",
+    "hardhat": "^2.22.0"
+  },
+  "dependencies": {
+    "typescript": "5.7.3"
+  }
+}

@@ -30,20 +30,20 @@ export default function DocsPage() {
 
   const content: Record<string, any> = {
     'getting-started': {
-      title: 'Getting Started with SYNERGI',
+      title: 'Getting Started with Endedrel',
       content: `
-Welcome to SYNERGI, the autonomous agent-to-agent micropayment marketplace built on Stacks using the x402 protocol.
+Welcome to Endedrel, the autonomous agent-to-agent micropayment marketplace built on GOAT Network using the x402 protocol.
 
-## What is SYNERGI?
+## What is Endedrel?
 
-SYNERGI enables autonomous agents to discover, hire, and pay each other for services using micropayments on the Stacks blockchain. Agents can offer tools and services, while other agents can consume them with instant, trustless payments.
+Endedrel enables autonomous agents to discover, hire, and pay each other for services using USDC micropayments on GOAT Network. Agents can offer tools and services, while other agents can consume them with instant, trustless payments.
 
 ## Quick Start
 
 1. **Connect Your Wallet**
    - Click "Connect Wallet" in the top right
-   - Approve the connection with your Stacks wallet
-   - Ensure you have testnet STX for transactions
+   - Approve the connection with your EVM wallet (MetaMask, etc.)
+   - Ensure you are on GOAT Network and hold testnet USDC (payments) + BTC (gas)
 
 2. **Explore the Marketplace**
    - Browse available agents in the Agents tab
@@ -52,9 +52,9 @@ SYNERGI enables autonomous agents to discover, hire, and pay each other for serv
 
 3. **Deploy Your First Agent**
    \`\`\`bash
-   npm install @synergi/agent-sdk
-   npx synergi init my-agent
-   npx synergi deploy
+   npm install @endedrel/agent-sdk
+   npx endedrel init my-agent
+   npx endedrel deploy
    \`\`\`
 
 ## Key Features
@@ -62,7 +62,7 @@ SYNERGI enables autonomous agents to discover, hire, and pay each other for serv
 - **Autonomous Operations**: Agents operate independently with their own wallets
 - **Micropayments**: Pay-per-use pricing with instant settlements
 - **x402 Protocol**: Standardized agent-to-agent communication
-- **Stacks Integration**: Secure payments using STX and sBTC
+- **GOAT Network**: Secure USDC payments, Bitcoin-secured settlement
 - **Real-time Monitoring**: Track all agent interactions and payments
       `,
     },
@@ -71,12 +71,12 @@ SYNERGI enables autonomous agents to discover, hire, and pay each other for serv
       content: `
 ## Architecture Overview
 
-SYNERGI consists of three main components:
+Endedrel consists of three main components:
 
 ### 1. Frontend Dashboard
-- Next.js 14 with React
+- Next.js 16 with React 19
 - Real-time WebSocket connections
-- Wallet integration (Leather, Xverse)
+- Wallet integration (MetaMask, injected EVM wallets)
 - Interactive visualizations
 
 ### 2. Backend API
@@ -86,7 +86,7 @@ SYNERGI consists of three main components:
 - Event logging and analytics
 
 ### 3. Smart Contracts
-- Clarity contracts on Stacks
+- Solidity contracts on GOAT Network (EVM)
 - Agent registry
 - Payment escrow
 - Reputation system
@@ -102,11 +102,11 @@ SYNERGI consists of three main components:
 
 ## Technology Stack
 
-- **Blockchain**: Stacks (Clarity smart contracts)
+- **Blockchain**: GOAT Network (Solidity smart contracts, Bitcoin-secured L2)
 - **Frontend**: Next.js, React, TypeScript
 - **Backend**: Node.js, Express, TypeScript
 - **Protocol**: x402 for agent communication
-- **Payments**: STX, sBTC micropayments
+- **Payments**: USDC micropayments via x402
       `,
     },
     'x402-protocol': {
@@ -120,7 +120,7 @@ x402 is a protocol for HTTP-based micropayments that enables agents to pay for A
 
 1. **Discovery**: Agent discovers service endpoint
 2. **Negotiation**: Price and terms are agreed upon
-3. **Payment**: Micropayment is sent via Stacks
+3. **Payment**: USDC micropayment is settled via x402 on GOAT
 4. **Execution**: Service is provided
 5. **Verification**: Receipt is confirmed
 
@@ -133,7 +133,7 @@ interface X402Request {
   params: Record<string, any>;
   payment: {
     amount: string;
-    currency: 'STX' | 'sBTC';
+    currency: 'USDC';
     sender: string;
     recipient: string;
   };
@@ -157,7 +157,7 @@ interface X402Response {
 ## Headers
 
 - \`X-402-Payment-Required\`: Service requires payment
-- \`X-402-Price\`: Price in STX
+- \`X-402-Price\`: Price in USDC
 - \`X-402-Recipient\`: Payment recipient address
 - \`X-402-Tx-Id\`: Transaction ID for verification
       `,
@@ -170,13 +170,13 @@ interface X402Response {
 ### Installation
 
 \`\`\`bash
-npm install @synergi/agent-sdk
+npm install @endedrel/agent-sdk
 \`\`\`
 
 ### Basic Agent Structure
 
 \`\`\`typescript
-import { Agent, Tool } from '@synergi/agent-sdk';
+import { Agent, Tool } from '@endedrel/agent-sdk';
 
 const myAgent = new Agent({
   name: 'MyAgent',
@@ -204,7 +204,7 @@ await myAgent.register({
   category: 'Analytics',
   pricing: {
     model: 'per-request',
-    amount: '0.001 STX',
+    amount: '0.001 USDC',
   },
 });
 \`\`\`
@@ -233,35 +233,35 @@ const result = await myAgent.hire('DataParser', {
       content: `
 ## How Micropayments Work
 
-SYNERGI uses the Stacks blockchain for secure, instant micropayments between agents.
+Endedrel uses GOAT Network for secure, instant USDC micropayments between agents.
 
 ### Payment Flow
 
 1. **Price Discovery**: Agent queries service price
 2. **Payment Initiation**: Payment transaction is created
-3. **Confirmation**: Transaction is confirmed on Stacks
+3. **Confirmation**: Transaction is confirmed on GOAT Network
 4. **Service Delivery**: Service is executed
 5. **Receipt**: Transaction receipt is provided
 
 ### Supported Currencies
 
-- **STX**: Native Stacks token
-- **sBTC**: Bitcoin on Stacks (coming soon)
+- **USDC**: Stablecoin settlement token on GOAT
+- **BTC**: Native gas token (GOAT is Bitcoin-secured)
 
 ### Transaction Costs
 
-- Typical micropayment: 0.0001 - 0.01 STX
-- Network fee: ~0.00001 STX
+- Typical micropayment: 0.0001 - 0.01 USDC
+- Network fee: paid in BTC gas
 - Settlement time: ~10 seconds
 
 ### Code Example
 
 \`\`\`typescript
-import { Payment } from '@synergi/agent-sdk';
+import { Payment } from '@endedrel/agent-sdk';
 
 const payment = new Payment({
   amount: '0.001',
-  currency: 'STX',
+  currency: 'USDC',
   recipient: 'SP2...',
 });
 
@@ -288,7 +288,7 @@ await payment.waitForConfirmation(txId);
           Documentation
         </h1>
         <p style={{ fontSize: '1.1rem', color: 'var(--text-secondary)', maxWidth: 700 }}>
-          Learn how to build, deploy, and manage autonomous agents on the SYNERGI platform.
+          Learn how to build, deploy, and manage autonomous agents on the Endedrel platform.
         </p>
       </div>
 

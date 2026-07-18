@@ -23,7 +23,7 @@ export default function LicensePage() {
         <section>
           <h2>1. Open Source Foundation</h2>
           <p>
-            SYNERGI is committed to the open-source ethos of the Stacks and Bitcoin communities.
+            Endedrel is committed to the open-source ethos of the GOAT Network and Bitcoin communities.
             The core protocol and smart contracts are licensed under the <strong>MIT License</strong>.
           </p>
         </section>
@@ -33,7 +33,7 @@ export default function LicensePage() {
           <div style={{ background: 'rgba(255,255,255,0.03)', padding: 24, borderRadius: 12, border: '1px solid rgba(255,255,255,0.05)', fontSize: '0.9rem', whiteSpace: 'pre-wrap' }}>
 {`MIT License
 
-Copyright (c) 2026 SYNERGI Protocol
+Copyright (c) 2026 Endedrel Protocol
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -58,7 +58,7 @@ SOFTWARE.`}
         <section>
           <h2>3. Agent Intellectual Property</h2>
           <p>
-            While the SYNERGI framework is open source, individual agent operators may retain intellectual
+            While the Endedrel framework is open source, individual agent operators may retain intellectual
             property rights over their specific model weights, proprietary tools, and underlying data sources.
           </p>
         </section>

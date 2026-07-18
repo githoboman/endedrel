@@ -1,6 +1,6 @@
 /**
  * ═══════════════════════════════════════════════════════════════════════════
- * SYNERGI — Autonomous x402 Agent (CLI + Programmatic)
+ * Endedrel — Autonomous x402 Agent (CLI + Programmatic)
  * ═══════════════════════════════════════════════════════════════════════════
  *
  * An AI agent that:
@@ -8,7 +8,7 @@
  *   2. Accepts a user query (CLI or programmatic)
  *   3. Plans optimal delegation using LLM (Groq / Gemini)
  *   4. Autonomously evaluates cost vs. reputation before hiring
- *   5. Pays each Worker Agent via x402 (STX/sBTC) on Stacks
+ *   5. Pays each Worker Agent via x402 (USDC) on GOAT Network
  *   6. Handles recursive A2A hiring chains
  *   7. Aggregates results into a final answer
  *
@@ -17,12 +17,7 @@
 
 import axios, { AxiosInstance } from 'axios';
 import dotenv from 'dotenv';
-import {
-  wrapAxiosWithPayment,
-  privateKeyToAccount,
-  decodePaymentResponse,
-  getExplorerURL,
-} from 'x402-stacks';
+import { privateKeyToAccount } from 'viem/accounts';
 import * as readline from 'readline';
 import Groq from 'groq-sdk';
 import { GoogleGenerativeAI } from '@google/generative-ai';
@@ -45,11 +40,35 @@ if (!PRIVATE_KEY) {
   process.exit(1);
 }
 
-const account = privateKeyToAccount(PRIVATE_KEY, NETWORK);
-const api: AxiosInstance = wrapAxiosWithPayment(
-  axios.create({ baseURL: SERVER_URL }),
-  account
+// EVM account derived from the private key (viem). Payment settlement now
+// happens server-side via the GOAT x402 order flow, so the agent uses a plain
+// axios client and passes its address so the backend can attribute the payer.
+const account = privateKeyToAccount(
+  (PRIVATE_KEY.startsWith('0x') ? PRIVATE_KEY : `0x${PRIVATE_KEY}`) as `0x${string}`
 );
+const api: AxiosInstance = axios.create({
+  baseURL: SERVER_URL,
+  headers: { 'x-payer-address': account.address },
+});
+
+// ── x402 helper shims (GOAT equivalents of former x402-stacks utilities) ──
+function decodePaymentResponse(raw: string): { transaction: string } | null {
+  if (!raw) return null;
+  try {
+    const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+    const tx = parsed.transaction || parsed.tx_hash || parsed.order_id;
+    return tx ? { transaction: tx } : null;
+  } catch {
+    return null;
+  }
+}
+
+function getExplorerURL(txId: string, _network?: string): string {
+  const base = NETWORK === 'mainnet'
+    ? 'https://explorer.goat.network'
+    : 'https://explorer.testnet3.goat.network';
+  return txId ? `${base}/tx/${txId}` : base;
+}
 
 // AI Clients
 let groqClient: Groq | null = null;
@@ -128,7 +147,7 @@ async function discoverTools(): Promise<Tool[]> {
     availableTools.forEach(t => {
       const subLabel = t.canHireSubAgents ? ' [A2A-ENABLED]' : '';
       console.log(
-        `  ├─ ${t.name.padEnd(22)} ${t.price.STX.toString().padEnd(6)} STX | Rep: ${t.reputation}/100 | Jobs: ${t.jobsCompleted}${subLabel}`
+        `  ├─ ${t.name.padEnd(22)} ${t.price.STX.toString().padEnd(6)} USDC | Rep: ${t.reputation}/100 | Jobs: ${t.jobsCompleted}${subLabel}`
       );
     });
     return availableTools;
@@ -180,14 +199,14 @@ function makeHiringDecision(toolId: string, tools: Tool[]): HiringDecision | nul
 
     if (costEfficiency >= altEfficiency) {
       reason = `Selected ${tool.name} (Efficiency: ${costEfficiency}) over ${alt.name} (Efficiency: ${altEfficiency}). ` +
-        `Reason: Better cost-reputation ratio at ${tool.price.STX} STX with ${tool.reputation}/100 reputation.`;
+        `Reason: Better cost-reputation ratio at ${tool.price.STX} USDC with ${tool.reputation}/100 reputation.`;
     } else {
-      reason = `Selected ${tool.name} (Cost: ${tool.price.STX} STX, Rep: ${tool.reputation}/100) — ` +
+      reason = `Selected ${tool.name} (Cost: ${tool.price.STX} USDC, Rep: ${tool.reputation}/100) — ` +
         `specific capability match. ${alt.name} had higher efficiency but different specialization.`;
     }
   } else {
     reason = `Hiring ${tool.name}: Only available specialist in "${tool.category}" category. ` +
-      `Cost: ${tool.price.STX} STX, Rep: ${tool.reputation}/100.`;
+      `Cost: ${tool.price.STX} USDC, Rep: ${tool.reputation}/100.`;
   }
 
   return { tool, reason, costEfficiency, alternatives };
@@ -199,10 +218,10 @@ function makeHiringDecision(toolId: string, tools: Tool[]): HiringDecision | nul
 
 async function planToolCalls(query: string, tools: Tool[]): Promise<AgentPlan> {
   const toolsDescription = tools.map(t =>
-    `- ID: "${t.id}" | Name: "${t.name}" | Cost: ${t.price.STX} STX | Rep: ${t.reputation}/100 | Cat: ${t.category} | ${t.canHireSubAgents ? 'CAN HIRE SUB-AGENTS' : 'Worker'}\n  Description: ${t.description}\n  Params: ${JSON.stringify(t.params)}`
+    `- ID: "${t.id}" | Name: "${t.name}" | Cost: ${t.price.STX} USDC | Rep: ${t.reputation}/100 | Cat: ${t.category} | ${t.canHireSubAgents ? 'CAN HIRE SUB-AGENTS' : 'Worker'}\n  Description: ${t.description}\n  Params: ${JSON.stringify(t.params)}`
   ).join('\n\n');
 
-  const systemPrompt = `You are the MANAGER AGENT of SYNERGI — an autonomous AI economy on Stacks blockchain.
+  const systemPrompt = `You are the MANAGER AGENT of Endedrel — an autonomous AI economy on Stacks blockchain.
 
 You have a BUDGET and must hire Worker Agents via x402 micropayments.
 Each hire costs real STX tokens on the Stacks blockchain.
@@ -307,7 +326,7 @@ function fallbackPlan(query: string, tools: Tool[]): AgentPlan {
 async function executeTool(
   toolId: string,
   params: Record<string, any>,
-  token: 'STX' | 'sBTC' = 'STX'
+  token: 'USDC' = 'USDC'
 ): Promise<ToolCallResult> {
   const startTime = Date.now();
   const hiring = makeHiringDecision(toolId, availableTools);
@@ -326,7 +345,7 @@ async function executeTool(
 
   const { tool, reason } = hiring;
 
-  console.log(`[AGENT] [PAY] Hiring ${tool.name} (${tool.price.STX} STX, Rep: ${tool.reputation}/100)`);
+  console.log(`[AGENT] [PAY] Hiring ${tool.name} (${tool.price.STX} USDC, Rep: ${tool.reputation}/100)`);
   console.log(`[AGENT] [NOTE] Reason: ${reason}`);
 
   try {
@@ -349,10 +368,10 @@ async function executeTool(
       result.payment = {
         transaction: paymentInfo.transaction,
         token,
-        amount: `${tool.price.STX} STX`,
+        amount: `${tool.price.STX} USDC`,
         explorerUrl: getExplorerURL(paymentInfo.transaction, NETWORK),
       };
-      console.log(`[AGENT] [OK] Paid ${tool.price.STX} STX | tx: ${paymentInfo.transaction}`);
+      console.log(`[AGENT] [OK] Paid ${tool.price.STX} USDC | tx: ${paymentInfo.transaction}`);
     }
 
     // Track sub-agent hires from recursive agents
@@ -383,7 +402,7 @@ async function executeTool(
     for (let retry = 0; retry < Math.min(MAX_RETRIES, alternatives.length); retry++) {
       const fallback = alternatives[retry];
       console.log(`[AGENT] [SELF-HEAL] Attempt ${retry + 1}: Switching from ${tool.name} to ${fallback.name}`);
-      console.log(`[AGENT] [SELF-HEAL] Fallback: ${fallback.name} (Rep: ${fallback.reputation}, Cost: ${fallback.price.STX} STX)`);
+      console.log(`[AGENT] [SELF-HEAL] Fallback: ${fallback.name} (Rep: ${fallback.reputation}, Cost: ${fallback.price.STX} USDC)`);
 
       try {
         const fallbackRes = await api.post(`${fallback.endpoint}?token=${token}`, params);
@@ -405,10 +424,10 @@ async function executeTool(
           healedResult.payment = {
             transaction: fallbackPaymentInfo.transaction,
             token,
-            amount: `${fallback.price.STX} STX`,
+            amount: `${fallback.price.STX} USDC`,
             explorerUrl: getExplorerURL(fallbackPaymentInfo.transaction, NETWORK),
           };
-          console.log(`[AGENT] [SELF-HEAL] Recovered via ${fallback.name} | Paid ${fallback.price.STX} STX`);
+          console.log(`[AGENT] [SELF-HEAL] Recovered via ${fallback.name} | Paid ${fallback.price.STX} USDC`);
         }
 
         return healedResult;
@@ -436,7 +455,7 @@ async function executeTool(
 
 async function processQuery(
   query: string,
-  token: 'STX' | 'sBTC' = 'STX'
+  token: 'USDC' = 'USDC'
 ): Promise<{
   query: string;
   plan: AgentPlan;
@@ -554,7 +573,7 @@ async function synthesizeAnswer(query: string, results: ToolCallResult[]): Promi
 async function startRepl() {
   console.log('');
   console.log('╔══════════════════════════════════════════════════════════════╗');
-  console.log('║              SYNERGI — x402 AUTONOMOUS AGENT                ║');
+  console.log('║              Endedrel — x402 AUTONOMOUS AGENT                ║');
   console.log('║           Agent-to-Agent Economy on Stacks                  ║');
   console.log('╠══════════════════════════════════════════════════════════════╣');
   console.log(`║  Server  : ${SERVER_URL.padEnd(49)}║`);
@@ -577,7 +596,7 @@ async function startRepl() {
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
 
   const prompt = () => {
-    rl.question('\n[SYNERGI] > ', async (input) => {
+    rl.question('\n[Endedrel] > ', async (input) => {
       const trimmed = input.trim();
       if (!trimmed) { prompt(); return; }
 
@@ -591,7 +610,7 @@ async function startRepl() {
         console.log('\n┌─ Available Worker Agents ─────────────────────────────────┐');
         for (const t of availableTools) {
           const sub = t.canHireSubAgents ? ' [A2A]' : '   ';
-          console.log(`│ ${t.name.padEnd(22)} ${t.price.STX.toString().padEnd(7)} STX | Rep: ${t.reputation.toString().padEnd(3)}/100 | ${t.category}${sub} │`);
+          console.log(`│ ${t.name.padEnd(22)} ${t.price.STX.toString().padEnd(7)} USDC | Rep: ${t.reputation.toString().padEnd(3)}/100 | ${t.category}${sub} │`);
         }
         console.log('└───────────────────────────────────────────────────────────┘');
         prompt();

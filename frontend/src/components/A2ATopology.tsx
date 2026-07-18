@@ -45,7 +45,7 @@ export const A2ATopology = ({ hires }: { hires: AgentHire[] }) => {
         y,
         label: hire.agent,
         cost: hire.cost,
-        currency: hire.currency || 'STX',
+        currency: hire.currency || 'USDC',
         depth
       });
 

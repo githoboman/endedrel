@@ -12,8 +12,8 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'SYNERGI — x402 Agent Economy | Stacks Hackathon',
-  description: 'Autonomous Agent-to-Agent micropayment marketplace on Stacks via x402 protocol',
+  title: 'Endedrel — x402 Agent Economy | GOAT Network',
+  description: 'Autonomous Agent-to-Agent micropayment marketplace on GOAT Network via x402 protocol',
   icons: {
     icon: '/logo.png',
   },

@@ -1,10 +1,10 @@
 /**
  * ═══════════════════════════════════════════════════════════════════════════
- * SYNERGI — x402 Autonomous Agent Economy Server
+ * Endedrel — x402 Autonomous Agent Economy Server
  * ═══════════════════════════════════════════════════════════════════════════
  *
  * A production-grade backend that implements:
- *   - x402 payment-gated endpoints (STX / sBTC)
+ *   - x402 payment-gated endpoints (USDC on GOAT)
  *   - Agent-to-Agent (A2A) recursive hiring
  *   - On-chain agent registry integration
  *   - Real-time SSE for live dashboard updates
@@ -12,14 +12,14 @@
  *   - LLM-powered autonomous task planning (Groq + Gemini fallback)
  *
  * Endpoints (Paid):
- *   POST /api/weather           — Weather lookup       (0.001 STX)
- *   POST /api/summarize         — Text summarization   (0.003 STX)
- *   POST /api/math-solve        — Math solver           (0.005 STX)
- *   POST /api/sentiment         — Sentiment analysis    (0.002 STX)
- *   POST /api/code-explain      — Code explainer        (0.004 STX)
- *   POST /api/agent/research    — Deep Research Agent   (0.01 STX)
- *   POST /api/agent/code        — Coder Agent           (0.02 STX)
- *   POST /api/agent/translate   — Translation Agent     (0.005 STX)
+ *   POST /api/weather           — Weather lookup       (0.001 USDC)
+ *   POST /api/summarize         — Text summarization   (0.003 USDC)
+ *   POST /api/math-solve        — Math solver           (0.005 USDC)
+ *   POST /api/sentiment         — Sentiment analysis    (0.002 USDC)
+ *   POST /api/code-explain      — Code explainer        (0.004 USDC)
+ *   POST /api/agent/research    — Deep Research Agent   (0.01 USDC)
+ *   POST /api/agent/code        — Coder Agent           (0.02 USDC)
+ *   POST /api/agent/translate   — Translation Agent     (0.005 USDC)
  *
  * Endpoints (Free):
  *   GET  /health                — Server health
@@ -37,16 +37,12 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
 import {
-  paymentMiddleware,
-  getPayment,
-  STXtoMicroSTX,
-  BTCtoSats,
-  getDefaultSBTCContract,
-  getExplorerURL,
-  wrapAxiosWithPayment,
-  privateKeyToAccount,
-  decodePaymentResponse,
-} from 'x402-stacks';
+  createOrder,
+  waitForConfirmation,
+  goatCredentialsPresent,
+  goatExplorerUrl,
+  goatConfig,
+} from './goat-x402.js';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import Groq from 'groq-sdk';
 import axios from 'axios';
@@ -60,20 +56,48 @@ dotenv.config();
 
 const PORT = parseInt(process.env.PORT || '4002', 10);
 const HOST = process.env.HOST || '0.0.0.0';
-const NETWORK = (process.env.STACKS_NETWORK as 'testnet' | 'mainnet') || 'testnet';
-const SERVER_ADDRESS = process.env.SERVER_ADDRESS || 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM';
-const FACILITATOR_URL = process.env.X402_FACILITATOR_URL || process.env.FACILITATOR_URL || 'https://x402-facilitator.onrender.com';
-const EXPLORER_BASE = 'https://explorer.hiro.so';
-const AGENT_PRIVATE_KEY = process.env.AGENT_PRIVATE_KEY;
+const NETWORK = (process.env.GOAT_NETWORK as 'testnet' | 'mainnet') || 'testnet';
+// EVM address that receives payments on GOAT (0x...).
+const SERVER_ADDRESS = process.env.SERVER_ADDRESS || '0x0000000000000000000000000000000000000000';
+const EXPLORER_BASE = goatConfig.NETWORK === 'mainnet'
+  ? 'https://explorer.goat.network'
+  : 'https://explorer.testnet3.goat.network';
+const AGENT_ADDRESS = process.env.AGENT_ADDRESS || SERVER_ADDRESS;
 
-if (!AGENT_PRIVATE_KEY) {
-  console.warn('[WARN] AGENT_PRIVATE_KEY not set. Agent will use simulated payments.');
+if (!goatCredentialsPresent()) {
+  console.warn('[WARN] GOAT x402 merchant credentials not set. Payments run in SIMULATION mode.');
 }
 
-const agentAccount = AGENT_PRIVATE_KEY ? privateKeyToAccount(AGENT_PRIVATE_KEY, NETWORK) : null;
-const agentClient = AGENT_PRIVATE_KEY
-  ? wrapAxiosWithPayment(axios.create({ baseURL: `http://127.0.0.1:${PORT}` }) as any, agentAccount as any)
-  : null;
+// Internal axios client the manager uses to call worker endpoints on this
+// same server. Payment is settled out-of-band via the GOAT order flow in
+// createPaidRoute, so this is a plain client (no payment-wrapping interceptor).
+const agentClient = axios.create({ baseURL: `http://127.0.0.1:${PORT}` });
+
+// ── x402 helper shims (GOAT equivalents of former x402-stacks utilities) ──
+
+/** Read the settled GOAT order attached to a gated request, if any. */
+function getPayment(req: Request): { transaction?: string; payer?: string } | null {
+  const order = (req as any).goatOrder as { order_id?: string; from_address?: string } | undefined;
+  if (!order) return null;
+  return { transaction: order.order_id, payer: order.from_address };
+}
+
+/** Explorer URL for a GOAT tx/order (NETWORK arg kept for call-site compatibility). */
+function getExplorerURL(txId: string, _network?: string): string {
+  return goatExplorerUrl(txId);
+}
+
+/** Parse a GOAT settlement-proof / payment-response payload defensively. */
+function decodePaymentResponse(raw: string): { transaction: string } | null {
+  if (!raw) return null;
+  try {
+    const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+    const tx = parsed.transaction || parsed.tx_hash || parsed.order_id;
+    return tx ? { transaction: tx } : null;
+  } catch {
+    return null;
+  }
+}
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Express App
@@ -135,8 +159,17 @@ interface AgentRegistryEntry {
 interface PriceConfig {
   stxAmount: number;
   sbtcSats: number;
+  usdcAmount?: number;   // price in USDC (dollars). Falls back to stxAmount if unset.
   description: string;
   category: string;
+}
+
+// USDC has 6 decimals. Convert a dollar amount to base units ("wei") string.
+function usdcToBaseUnits(config: PriceConfig | number): string {
+  const usdc = typeof config === 'number'
+    ? config
+    : (config.usdcAmount ?? config.stxAmount);
+  return Math.round(usdc * 1_000_000).toString();
 }
 
 // ── Engine Hardening: Reputation Tiers & Recursive Guards ──
@@ -388,9 +421,7 @@ function logPayment(
   const txId = payment?.transaction || `sim_${(++paymentIdCounter).toString(16).padStart(8, '0')}`;
   const explorerUrl = getExplorerURL(txId, NETWORK);
 
-  const displayAmount = token === 'sBTC'
-    ? `${priceConfig.sbtcSats} sats sBTC`
-    : `${priceConfig.stxAmount} STX`;
+  const displayAmount = `${priceConfig.usdcAmount ?? priceConfig.stxAmount} USDC`;
 
   // Capture raw 402 headers for protocol transparency
   const rawHeaders: Record<string, string> = {};
@@ -428,66 +459,50 @@ function logPayment(
 // Token Resolution + Payment Middleware Factory
 // ═══════════════════════════════════════════════════════════════════════════
 
-type TokenType = 'STX' | 'sBTC';
+// GOAT settles in a single token (USDC). Kept as a function so the 8 route
+// handlers that call resolveToken(req) need no changes.
+type TokenType = 'USDC';
 
-function resolveToken(req: Request): TokenType {
-  const fromQuery = (req.query.token as string)?.toUpperCase();
-  const fromHeader = (req.headers['x-token-type'] as string)?.toUpperCase();
-  const token = fromQuery || fromHeader || 'STX';
-  return token === 'SBTC' ? 'sBTC' : 'STX';
+function resolveToken(_req: Request): TokenType {
+  return 'USDC';
 }
 
 function createPaidRoute(config: PriceConfig) {
   return async (req: Request, res: Response, next: NextFunction) => {
-    const token = resolveToken(req);
-    const opts: Parameters<typeof paymentMiddleware>[0] = {
-      amount: token === 'sBTC'
-        ? BTCtoSats(config.sbtcSats / 1e8)
-        : STXtoMicroSTX(config.stxAmount),
-      payTo: SERVER_ADDRESS,
-      network: NETWORK,
-      facilitatorUrl: FACILITATOR_URL,
-      description: config.description,
-      ...(token === 'sBTC' && {
-        tokenType: 'sBTC' as const,
-        tokenContract: getDefaultSBTCContract(NETWORK),
-      }),
-    };
-    const middleware = paymentMiddleware(opts);
-
-    // Simulation Mode Bypass
-    if (process.env.SIMULATION_MODE === 'true') {
-      console.warn(`[PAYMENT] [SIMULATION] Bypassing payment for ${req.path}`);
+    // Simulate when explicitly asked OR when GOAT merchant credentials are
+    // absent (can't settle without them). Keeps the demo runnable end-to-end.
+    if (process.env.SIMULATION_MODE === 'true' || !goatCredentialsPresent()) {
+      if (process.env.SIMULATION_MODE !== 'true') {
+        console.warn(`[PAYMENT] [SIMULATION] No GOAT credentials — bypassing payment for ${req.path}`);
+      }
       next();
       return;
     }
 
-    // Wrap middleware in a promise with timeout
-    const middlewarePromise = new Promise<void>((resolve, reject) => {
-      middleware(req, res, (err: any) => {
-        if (err) reject(err);
-        else resolve();
-      });
-    });
-
-    // Timeout race
-    const timeoutPromise = new Promise<void>((_, reject) => {
-      setTimeout(() => reject(new Error('Payment facilitator timed out')), 5000)
-    });
-
+    // Real settlement via the GOAT x402 merchant gateway: create an order
+    // for the USDC price and gate access on it reaching PAYMENT_CONFIRMED.
     try {
-      await Promise.race([middlewarePromise, timeoutPromise]);
-      next();
-    } catch (error: any) {
-       // If headers sent, we can't do anything more
-      if (res.headersSent) return;
+      const payer = (req.headers['x-payer-address'] as string) || AGENT_ADDRESS;
+      const order = await createOrder({
+        dappOrderId: `job_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+        fromAddress: payer,
+        amountWei: usdcToBaseUnits(config),
+        tokenSymbol: 'USDC',
+        tokenContract: process.env.USDC_ADDRESS || undefined,
+      });
 
-      if (error.message === 'Payment facilitator timed out') {
-        console.warn('[PAYMENT] Facilitator timed out. Bypassing for SIMULATION MODE.')
-        next()
-      } else {
-        next(error);
+      const settled = await waitForConfirmation(order.order_id, { timeoutMs: 20000 });
+      if (settled.state === 'PAYMENT_CONFIRMED' || settled.state === 'INVOICED') {
+        (req as any).goatOrder = settled;
+        next();
+        return;
       }
+
+      if (res.headersSent) return;
+      res.status(402).json({ error: 'Payment required', orderState: settled.state, orderId: order.order_id });
+    } catch (error: any) {
+      if (res.headersSent) return;
+      next(error);
     }
   };
 }
@@ -496,64 +511,56 @@ function createPaidRoute(config: PriceConfig) {
 // Pricing Configuration
 // ═══════════════════════════════════════════════════════════════════════════
 
+// Prices are denominated in USDC (dollars). stxAmount is retained as a mirror
+// of usdcAmount so any legacy read still returns the same number.
 const PRICES: Record<string, PriceConfig> = {
   weather: {
-    stxAmount: 0.001,
-    sbtcSats: 100,
+    usdcAmount: 0.001, stxAmount: 0.001, sbtcSats: 0,
     description: 'Weather data lookup (Worker Agent)',
     category: 'data',
   },
   summarize: {
-    stxAmount: 0.003,
-    sbtcSats: 300,
+    usdcAmount: 0.003, stxAmount: 0.003, sbtcSats: 0,
     description: 'AI text summarization (Worker Agent)',
     category: 'nlp',
   },
   mathSolve: {
-    stxAmount: 0.005,
-    sbtcSats: 500,
+    usdcAmount: 0.005, stxAmount: 0.005, sbtcSats: 0,
     description: 'Math equation solver (Worker Agent)',
     category: 'compute',
   },
   sentiment: {
-    stxAmount: 0.002,
-    sbtcSats: 200,
+    usdcAmount: 0.002, stxAmount: 0.002, sbtcSats: 0,
     description: 'Sentiment analysis (Worker Agent)',
     category: 'nlp',
   },
   codeExplain: {
-    stxAmount: 0.004,
-    sbtcSats: 400,
+    usdcAmount: 0.004, stxAmount: 0.004, sbtcSats: 0,
     description: 'Code explainer (Worker Agent)',
     category: 'dev',
   },
   research: {
-    stxAmount: 0.01,
-    sbtcSats: 1000,
+    usdcAmount: 0.01, stxAmount: 0.01, sbtcSats: 0,
     description: 'Deep Research Agent (can hire sub-agents)',
     category: 'research',
   },
   coding: {
-    stxAmount: 0.02,
-    sbtcSats: 2000,
+    usdcAmount: 0.02, stxAmount: 0.02, sbtcSats: 0,
     description: 'Senior Coder Agent (can hire sub-agents)',
     category: 'dev',
   },
   translate: {
-    stxAmount: 0.005,
-    sbtcSats: 500,
+    usdcAmount: 0.005, stxAmount: 0.005, sbtcSats: 0,
     description: 'Translation Agent (Worker Agent)',
     category: 'nlp',
   },
   kaggleingest: {
-    stxAmount: 0.02,
-    sbtcSats: 2000,
+    usdcAmount: 0.02, stxAmount: 0.02, sbtcSats: 0,
     description: 'KaggleIngest DataService — dataset discovery and quality analysis',
     category: 'data',
   },
   arbitrator: {
-    stxAmount: 0.05,
-    sbtcSats: 5000,
+    usdcAmount: 0.05, stxAmount: 0.05, sbtcSats: 0,
     description: 'Arbitrator Agent (Final Judgement Agent)',
     category: 'arbitrator',
   },
@@ -587,7 +594,7 @@ app.get('/health', (_req: Request, res: Response) => {
     status: 'ok',
     uptime: process.uptime(),
     network: NETWORK,
-    facilitator: FACILITATOR_URL,
+    facilitator: goatConfig.BASE_URL,
     version: '2.0.0',
     agents: agentRegistry.length,
     totalPayments: paymentLogs.length,
@@ -596,13 +603,13 @@ app.get('/health', (_req: Request, res: Response) => {
 
 app.get('/', (_req: Request, res: Response) => {
   res.json({
-    name: 'SYNERGI — x402 Autonomous Agent Economy',
+    name: 'Endedrel — x402 Autonomous Agent Economy',
     version: '2.0.0',
-    description: 'Agent-to-Agent micropayment marketplace on Stacks via x402',
+    description: 'Agent-to-Agent micropayment marketplace on GOAT Network via x402',
     network: NETWORK,
-    facilitator: FACILITATOR_URL,
+    facilitator: goatConfig.BASE_URL,
     protocol: 'x402 (HTTP 402 Payment Required)',
-    tokenSupport: ['STX', 'sBTC'],
+    tokenSupport: ['USDC'],
     features: [
       'Agent-to-Agent (A2A) recursive hiring',
       'On-chain reputation system',
@@ -636,7 +643,7 @@ app.get('/api/tools', (_req: Request, res: Response) => {
       name: agent?.name || id,
       endpoint: endpointMap[id] || `/api/${id}`,
       method: 'POST',
-      price: { STX: config.stxAmount, sBTC_sats: config.sbtcSats },
+      price: { USDC: config.usdcAmount ?? config.stxAmount, STX: config.stxAmount, sBTC_sats: config.sbtcSats },
       category: config.category,
       description: config.description,
       reputation: agent?.reputation || 50,
@@ -653,7 +660,7 @@ app.get('/api/tools', (_req: Request, res: Response) => {
     name: agent.name,
     endpoint: `/api/adapter/external/${agent.id}`,
     method: 'POST',
-    price: { STX: agent.price.amount, sBTC_sats: 0 },
+    price: { USDC: agent.price.amount, STX: agent.price.amount, sBTC_sats: 0 },
     category: agent.capabilities[0],
     description: agent.description,
     reputation: agent.reputation,
@@ -712,9 +719,13 @@ app.get('/api/registry', (req: Request, res: Response) => {
       agents.sort((a, b) => b.efficiency - a.efficiency);
   }
 
+  // Expose priceUSDC alias (settlement is USDC on GOAT); priceSTX kept for
+  // back-compat with internal fields — same numeric value.
+  const agentsOut = agents.map(a => ({ ...a, priceUSDC: a.priceSTX }));
+
   res.json({
-    agents,
-    count: agents.length,
+    agents: agentsOut,
+    count: agentsOut.length,
     categories: [...new Set(agentRegistry.map(a => a.category))],
     contractAddress: process.env.CONTRACT_ADDRESS || 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.agent-registry',
     network: NETWORK,
@@ -1112,7 +1123,7 @@ app.post('/api/agent/research', createPaidRoute(PRICES.research), async (req: Re
       hirer: 'DeepResearch Alpha',
       worker: 'KaggleIngest PRO',
       cost: 0.02,
-      reason: 'Sourcing premium sBTC historical datasets and ecosystem metadata',
+      reason: 'Sourcing premium on-chain historical datasets and ecosystem metadata',
       parentJobId: jobId,
       depth: 1,
     });
@@ -1125,7 +1136,7 @@ app.post('/api/agent/research', createPaidRoute(PRICES.research), async (req: Re
       worker: 'KaggleIngest PRO',
       transaction: `a2a_${Math.random().toString(16).slice(2, 14)}`,
       token: token,
-      amount: '0.02 STX',
+      amount: '0.02 USDC',
       explorerUrl: `${EXPLORER_BASE}/txid/0x${Math.random().toString(16).repeat(4).slice(0, 64)}?chain=testnet`,
       isA2A: true,
       parentJobId: jobId,
@@ -1137,8 +1148,8 @@ app.post('/api/agent/research', createPaidRoute(PRICES.research), async (req: Re
     subAgentResults.push({
       agent: 'KaggleIngest PRO',
       task: 'Ingest premium ecosystem data',
-      cost: '0.02 STX',
-      result: 'sBTC Mainnet Launch metrics: 1.2M transactions, 45 active nodes, 98.4% uptime. TOON v2 schema detected.',
+      cost: '0.02 USDC',
+      result: 'GOAT Network metrics: 1.2M transactions, 45 active nodes, 98.4% uptime. TOON v2 schema detected.',
       payment: kagglePayment,
     });
   }
@@ -1150,7 +1161,7 @@ app.post('/api/agent/research', createPaidRoute(PRICES.research), async (req: Re
       const completion = await groq.chat.completions.create({
         messages: [
           { role: 'system', content: 'You are a deep research agent. Provide comprehensive analysis with sources, key findings, and trends. Be thorough but concise.' },
-          { role: 'user', content: query + (isDataQuery ? " [Use KaggleIngest data: sBTC counts, node activity]" : "") },
+          { role: 'user', content: query + (isDataQuery ? " [Use KaggleIngest data: on-chain counts, node activity]" : "") },
         ],
         model: 'llama-3.3-70b-versatile',
         temperature: 0.5,
@@ -1198,7 +1209,7 @@ app.post('/api/agent/research', createPaidRoute(PRICES.research), async (req: Re
     worker: 'Summarizer Pro',
     transaction: `a2a_${Math.random().toString(16).slice(2, 14)}`,
     token: token,
-    amount: `${PRICES.summarize.stxAmount} STX`,
+    amount: `${PRICES.summarize.stxAmount} USDC`,
     explorerUrl: `${EXPLORER_BASE}/txid/0x${Math.random().toString(16).repeat(4).slice(0, 64)}?chain=testnet`,
     isA2A: true,
     parentJobId: jobId,
@@ -1210,7 +1221,7 @@ app.post('/api/agent/research', createPaidRoute(PRICES.research), async (req: Re
   subAgentResults.push({
     agent: 'Summarizer Pro',
     task: 'Condense research findings',
-    cost: `${PRICES.summarize.stxAmount} STX`,
+    cost: `${PRICES.summarize.stxAmount} USDC`,
     result: typeof researchResult.summary === 'string'
       ? researchResult.summary.slice(0, 200) + '...'
       : 'Summary generated.',
@@ -1235,7 +1246,7 @@ app.post('/api/agent/research', createPaidRoute(PRICES.research), async (req: Re
     worker: 'SentimentAI',
     transaction: `a2a_${Math.random().toString(16).slice(2, 14)}`,
     token: token,
-    amount: `${PRICES.sentiment.stxAmount} STX`,
+    amount: `${PRICES.sentiment.stxAmount} USDC`,
     explorerUrl: `${EXPLORER_BASE}/txid/0x${Math.random().toString(16).repeat(4).slice(0, 64)}?chain=testnet`,
     isA2A: true,
     parentJobId: jobId,
@@ -1247,7 +1258,7 @@ app.post('/api/agent/research', createPaidRoute(PRICES.research), async (req: Re
   subAgentResults.push({
     agent: 'SentimentAI',
     task: 'Sentiment analysis of sources',
-    cost: `${PRICES.sentiment.stxAmount} STX`,
+    cost: `${PRICES.sentiment.stxAmount} USDC`,
     result: 'Positive sentiment detected (confidence: 82%)',
     payment: subPayment2,
   });
@@ -1336,7 +1347,7 @@ app.post('/api/agent/code', createPaidRoute(PRICES.coding), async (req: Request,
     worker: 'CodeExplainer',
     transaction: `a2a_${Math.random().toString(16).slice(2, 14)}`,
     token: token,
-    amount: `${PRICES.codeExplain.stxAmount} STX`,
+    amount: `${PRICES.codeExplain.stxAmount} USDC`,
     explorerUrl: `${EXPLORER_BASE}/txid/0x${Math.random().toString(16).repeat(4).slice(0, 64)}?chain=testnet`,
     isA2A: true,
     parentJobId: jobId,
@@ -1359,7 +1370,7 @@ app.post('/api/agent/code', createPaidRoute(PRICES.coding), async (req: Request,
     selfReview: {
       agent: 'CodeExplainer',
       verdict: 'Code passes quality checks. Clean structure, proper error handling.',
-      cost: `${PRICES.codeExplain.stxAmount} STX`,
+      cost: `${PRICES.codeExplain.stxAmount} USDC`,
       payment: subPayment,
     },
     totalCostIncludingSubAgents: PRICES.coding.stxAmount + PRICES.codeExplain.stxAmount,
@@ -1465,9 +1476,9 @@ function autonomousHiringDecision(
   const chosen = scored[0].agent;
   const alternatives = scored.slice(1).map(s => s.agent);
 
-  const reason = `Selected ${chosen.name} (Rep: ${chosen.reputation}/100, Cost: ${chosen.priceSTX} STX, Efficiency: ${scored[0].score.toFixed(1)}). ` +
+  const reason = `Selected ${chosen.name} (Rep: ${chosen.reputation}/100, Cost: ${chosen.priceSTX} USDC, Efficiency: ${scored[0].score.toFixed(1)}). ` +
     (alternatives.length > 0
-      ? `Rejected ${alternatives[0].name} (Rep: ${alternatives[0].reputation}, Cost: ${alternatives[0].priceSTX} STX) — lower efficiency score.`
+      ? `Rejected ${alternatives[0].name} (Rep: ${alternatives[0].reputation}, Cost: ${alternatives[0].priceSTX} USDC) — lower efficiency score.`
       : 'No alternatives available.');
 
   return { chosen, reason, alternatives };
@@ -1608,13 +1619,13 @@ Return ONLY valid JSON:
 
     // ── Budget Guard ──
     if (totalCost.STX + price.stxAmount > budgetLimit) {
-      console.warn(`[BUDGET GUARD] Transaction blocked. Cost ${price.stxAmount} exceed remaining budget of ${budgetLimit - totalCost.STX} STX`);
+      console.warn(`[BUDGET GUARD] Transaction blocked. Cost ${price.stxAmount} exceed remaining budget of ${budgetLimit - totalCost.STX} USDC`);
       results.push({
         tool: toolId,
         result: null,
-        error: `Budget limit reached (${budgetLimit} STX). Arbitrator Agent could be hired to request a budget increase.`
+        error: `Budget limit reached (${budgetLimit} USDC). Arbitrator Agent could be hired to request a budget increase.`
       });
-      plan.push(`[GUARD] Blocked ${toolId}: Budget Limit (${budgetLimit} STX) exceeded.`);
+      plan.push(`[GUARD] Blocked ${toolId}: Budget Limit (${budgetLimit} USDC) exceeded.`);
       continue;
     }
 
@@ -1629,7 +1640,7 @@ Return ONLY valid JSON:
       reputation: hiring.chosen?.reputation || 0,
       alternative: hiring.alternatives[0]?.name,
       alternativeReason: hiring.alternatives[0]
-        ? `${hiring.alternatives[0].reputation}/100 rep, ${hiring.alternatives[0].priceSTX} STX`
+        ? `${hiring.alternatives[0].reputation}/100 rep, ${hiring.alternatives[0].priceSTX} USDC`
         : undefined,
     });
 
@@ -1650,7 +1661,7 @@ Return ONLY valid JSON:
     if (clientId) {
       sendSSETo(clientId, 'step', {
         label: `Hiring ${agentName}`,
-        detail: `${price.stxAmount} STX | Rep: ${hiring.chosen?.reputation || 'N/A'}/100`,
+        detail: `${price.stxAmount} USDC | Rep: ${hiring.chosen?.reputation || 'N/A'}/100`,
         status: 'active',
       });
     }
@@ -1690,7 +1701,7 @@ Return ONLY valid JSON:
           payment = {
             transaction: paymentInfo.transaction,
             token,
-            amount: `${price.stxAmount} STX`,
+            amount: `${price.stxAmount} USDC`,
             explorerUrl: getExplorerURL(paymentInfo.transaction, NETWORK),
           };
         }
@@ -1758,7 +1769,7 @@ Return ONLY valid JSON:
             const fallbackName = fallbackAgent.name;
 
             console.log(`[SELF-HEAL] Attempt ${retry + 1}: Switching from ${agentName} to ${fallbackName}`);
-            plan.push(`[SELF-HEAL] ${agentName} failed. Retrying with ${fallbackName} (Rep: ${fallbackAgent.reputation}, Cost: ${fallbackAgent.priceSTX} STX)`);
+            plan.push(`[SELF-HEAL] ${agentName} failed. Retrying with ${fallbackName} (Rep: ${fallbackAgent.reputation}, Cost: ${fallbackAgent.priceSTX} USDC)`);
 
             if (clientId) {
               sendSSETo(clientId, 'step', {
@@ -1789,8 +1800,8 @@ Return ONLY valid JSON:
               // Fallback payment record
               payment = {
                 transaction: `heal_${toolId}_${Math.random().toString(16).slice(2, 10)}`,
-                token: token || 'STX',
-                amount: `${fallbackAgent.priceSTX} STX`,
+                token: token || 'USDC',
+                amount: `${fallbackAgent.priceSTX} USDC`,
                 explorerUrl: `${EXPLORER_BASE}/txid/0x${Math.random().toString(16).repeat(4).slice(0, 64)}?chain=testnet`,
                 selfHealed: true,
                 originalAgent: agentName,
@@ -1829,8 +1840,8 @@ Return ONLY valid JSON:
           const simResult = await simulateToolResult(toolId, tc.params, query);
           const simPayment = {
             transaction: `sim_fallback_${toolId}_${Math.random().toString(16).slice(2, 10)}`,
-            token: token || 'STX',
-            amount: `${price.stxAmount} STX`,
+            token: token || 'USDC',
+            amount: `${price.stxAmount} USDC`,
             explorerUrl: `${EXPLORER_BASE}/txid/0x${Math.random().toString(16).repeat(4).slice(0, 64)}?chain=testnet`,
             mode: 'simulation-fallback',
           };
@@ -1854,8 +1865,8 @@ Return ONLY valid JSON:
       // Simulation mode
       payment = {
         transaction: `sim_${toolId}_${Math.random().toString(16).slice(2, 10)}`,
-        token: token || 'STX',
-        amount: `${price.stxAmount} STX`,
+        token: token || 'USDC',
+        amount: `${price.stxAmount} USDC`,
         explorerUrl: `${EXPLORER_BASE}/txid/0x${Math.random().toString(16).repeat(4).slice(0, 64)}?chain=testnet`,
       };
 
@@ -1881,15 +1892,15 @@ Return ONLY valid JSON:
       const subHires: any[] = [];
       if (toolId === 'research') {
         const subPay = createL2Settlement('DeepResearch Alpha', 'Summarizer Pro', PRICES.summarize, token, 1);
-        subHires.push({ agent: 'Summarizer Pro', task: 'Condense findings', cost: `${PRICES.summarize.stxAmount} STX`, payment: subPay });
+        subHires.push({ agent: 'Summarizer Pro', task: 'Condense findings', cost: `${PRICES.summarize.stxAmount} USDC`, payment: subPay });
         const subPay2 = createL2Settlement('DeepResearch Alpha', 'SentimentAI', PRICES.sentiment, token, 1);
-        subHires.push({ agent: 'SentimentAI', task: 'Tone analysis', cost: `${PRICES.sentiment.stxAmount} STX`, payment: subPay2 });
+        subHires.push({ agent: 'SentimentAI', task: 'Tone analysis', cost: `${PRICES.sentiment.stxAmount} USDC`, payment: subPay2 });
         totalCost.STX += PRICES.summarize.stxAmount + PRICES.sentiment.stxAmount;
         a2aDepth = Math.max(a2aDepth, 1);
       }
       if (toolId === 'coding') {
         const subPay = createL2Settlement('SeniorCoder GPT', 'CodeExplainer', PRICES.codeExplain, token, 1);
-        subHires.push({ agent: 'CodeExplainer', task: 'Quality review', cost: `${PRICES.codeExplain.stxAmount} STX`, payment: subPay });
+        subHires.push({ agent: 'CodeExplainer', task: 'Quality review', cost: `${PRICES.codeExplain.stxAmount} USDC`, payment: subPay });
         totalCost.STX += PRICES.codeExplain.stxAmount;
         a2aDepth = Math.max(a2aDepth, 1);
       }
@@ -1912,7 +1923,7 @@ Return ONLY valid JSON:
     if (clientId) {
       sendSSETo(clientId, 'step', {
         label: `Hiring ${agentName}`,
-        detail: `Paid ${price.stxAmount} STX ✓`,
+        detail: `Paid ${price.stxAmount} USDC ✓`,
         status: 'complete',
       });
     }
@@ -1972,7 +1983,7 @@ Return ONLY valid JSON:
     sendSSETo(clientId, 'done', { duration: Date.now() - startTime });
   }
 
-  plan.push(`Total cost: ${totalCost.STX.toFixed(4)} STX`);
+  plan.push(`Total cost: ${totalCost.STX.toFixed(4)} USDC`);
   plan.push(`A2A depth: ${a2aDepth}`);
   plan.push(`Duration: ${Date.now() - startTime}ms`);
 
@@ -2118,7 +2129,7 @@ function createL2Settlement(
     worker: worker,
     transaction: `a2a_${Math.random().toString(16).slice(2, 14)}`,
     token,
-    amount: `${price.stxAmount} STX`,
+    amount: `${price.stxAmount} USDC`,
     explorerUrl: `${EXPLORER_BASE}/txid/0x${Math.random().toString(16).repeat(4).slice(0, 64)}?chain=testnet`,
     isA2A: true,
     depth,
@@ -2163,7 +2174,7 @@ app.post('/api/agent/query', async (req: Request, res: Response) => {
       return;
     }
 
-    const result = await runManagerAgent(query, token || 'STX', clientId, options);
+    const result = await runManagerAgent(query, token || 'USDC', clientId, options);
     res.json(result);
   } catch (err) {
     console.error('[AGENT QUERY ERROR]', err);
@@ -2282,15 +2293,15 @@ app.post('/api/kaggleingest', async (req: Request, res: Response) => {
       payer: 'API Caller',
       worker: 'KaggleIngest DataService',
       transaction: `ki_${Math.random().toString(16).slice(2, 14)}`,
-      token: 'STX',
-      amount: '0.02 STX',
+      token: 'USDC',
+      amount: '0.02 USDC',
       explorerUrl: `${EXPLORER_BASE}/txid/0x${Math.random().toString(16).repeat(4).slice(0, 64)}?chain=testnet`,
       isA2A: false,
       depth: 0,
     });
     broadcastSSE('payment', paymentLogs[paymentLogs.length - 1]);
 
-    res.set('x-402-cost', '0.02 STX');
+    res.set('x-402-cost', '0.02 USDC');
     res.set('x-agent-protocol', 'MCP-Connect');
     res.json({
       status: 'success',
@@ -2336,8 +2347,8 @@ app.post('/api/agent/stress-test', async (req: Request, res: Response) => {
         metadata = {
           flashSwap: {
             provider: 'Bitflow',
-            pair: 'sBTC/STX',
-            amount: '0.005 sBTC',
+            pair: 'USDC',
+            amount: '0.005 USDC',
             fee: '150 sats',
             reason: 'Liquidity balance for sub-agent hire'
           }
@@ -2351,8 +2362,8 @@ app.post('/api/agent/stress-test', async (req: Request, res: Response) => {
         payer: i === 0 ? 'Manager' : activeAgents[i-1].name,
         worker: agent.name,
         transaction: `tx_stress_${Math.random().toString(16).slice(2, 10)}`,
-        token: swapNeeded ? 'sBTC' : 'STX',
-        amount: swapNeeded ? '0.005 sBTC' : `${agent.priceSTX} STX`,
+        token: 'USDC',
+        amount: swapNeeded ? '0.005 sBTC' : `${agent.priceSTX} USDC`,
         explorerUrl: 'https://explorer.stacks.co',
         isA2A: true,
         depth: depth,
@@ -2364,7 +2375,7 @@ app.post('/api/agent/stress-test', async (req: Request, res: Response) => {
     }
 
     sendSSETo(clientId, 'thought', {
-      content: "[STRESS TEST COMPLETE] Hive-mind synchronized. Synergi-Engine stable at peak load."
+      content: "[STRESS TEST COMPLETE] Hive-mind synchronized. Endedrel-Engine stable at peak load."
     });
   })();
 });
@@ -2396,18 +2407,18 @@ app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
 app.listen(PORT, HOST, () => {
   console.log('');
   console.log('╔══════════════════════════════════════════════════════════════╗');
-  console.log('║  SYNERGI — x402 Autonomous Agent Economy                   ║');
-  console.log('║  Agent-to-Agent Micropayment Marketplace on Stacks         ║');
+  console.log('║  Endedrel — x402 Autonomous Agent Economy                   ║');
+  console.log('║  Agent-to-Agent Micropayment Marketplace on GOAT Network   ║');
   console.log('╠══════════════════════════════════════════════════════════════╣');
   console.log(`║  Server      : http://${HOST}:${PORT}`);
-  console.log(`║  Network     : ${NETWORK}`);
-  console.log(`║  Facilitator : ${FACILITATOR_URL}`);
+  console.log(`║  Network     : ${NETWORK} (GOAT)`);
+  console.log(`║  Facilitator : ${goatConfig.BASE_URL}`);
   console.log(`║  Agents      : ${agentRegistry.length} registered`);
-  console.log(`║  Agent Wallet: ${agentAccount ? agentAccount.address : 'Simulation Mode'}`);
+  console.log(`║  Payments    : ${goatCredentialsPresent() ? 'GOAT x402 (live)' : 'Simulation Mode'}`);
   console.log('╠══════════════════════════════════════════════════════════════╣');
   console.log('║  Paid Endpoints (Worker Agents):');
   Object.entries(PRICES).forEach(([id, p]) => {
-    console.log(`║    ${id.padEnd(12)} ${p.stxAmount.toString().padEnd(6)} STX | ${p.sbtcSats.toString().padEnd(5)} sats`);
+    console.log(`║    ${id.padEnd(12)} ${(p.usdcAmount ?? p.stxAmount).toString().padEnd(6)} USDC`);
   });
   console.log('╠══════════════════════════════════════════════════════════════╣');
   console.log('║  Free Endpoints:');
