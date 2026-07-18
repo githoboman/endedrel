@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Github, Twitter, Send } from 'lucide-react';
+import { Github } from 'lucide-react';
 
 export default function Footer() {
   const productLinks = [
@@ -15,10 +15,9 @@ export default function Footer() {
 
   const resourceLinks = [
     { name: 'Documentation', path: '/docs' },
-    { name: 'API Reference', path: 'https://docs.stacks.co' },
+    { name: 'GOAT Docs', path: 'https://docs.goat.network' },
+    { name: 'x402 Protocol', path: 'https://x402.goat.network' },
     { name: 'Tutorials', path: '#' },
-    { name: 'Community', path: 'https://discord.gg/stacks' },
-    { name: 'Support', path: 'mailto:support@synergi.ai' },
   ];
 
   return (
@@ -76,9 +75,7 @@ export default function Footer() {
           </p>
           <div style={{ display: 'flex', gap: 12 }}>
             {[
-              { icon: Github, href: 'https://github.com/Mansi2007275/x402-autonomous-agent-?tab=readme-ov-file' },
-              { icon: Twitter, href: 'https://twitter.com/synergi' },
-              { icon: Send, href: 'https://t.me/synergi' }
+              { icon: Github, href: '#' },
             ].map((social, i) => (
               <a
                 key={i}

@@ -37,9 +37,14 @@ The portal also shows:
 
 Until API key + secret are set, the backend runs in **SIMULATION_MODE** (working demo, no real settlement).
 
-### 2. Brand values (still placeholders in the frontend)
-Lowercase `synergi` remains in: backend URL (`synergi.onrender.com`), `support@synergi.ai`,
-Twitter/Telegram handles, and localStorage keys. Provide the real Endedrel values to substitute.
+### 2. Brand values — DONE (synergi fully removed)
+All `synergi` references stripped from shipped code:
+- API URL default → `http://localhost:4002` (override with `NEXT_PUBLIC_API_URL` in prod)
+- localStorage keys → `endedrel_client_id`, `endedrel_lang`
+- Dead support email + Twitter/Telegram social links removed
+- Footer doc links repointed to GOAT (`docs.goat.network`, `x402.goat.network`)
+- GitHub footer link set to `#` — set your real Endedrel repo URL in `frontend/src/components/Footer.tsx` when ready
+Note: `contracts/agent-registry.clar` header still says "SYNERGI" — intentionally left as the original Stacks reference file (not shipped).
 
 ## First-real-request checklist (once you have credentials)
 

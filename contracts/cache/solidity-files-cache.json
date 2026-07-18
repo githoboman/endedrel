@@ -37,6 +37,42 @@
         "AgentRegistry",
         "IERC20"
       ]
+    },
+    "C:\\Users\\OWNER\\Desktop\\endedrel\\contracts\\src\\MockUSDC.sol": {
+      "lastModificationDate": 1784336619354,
+      "contentHash": "068315900ede31559f17ba03cb8b4e78",
+      "sourceName": "src/MockUSDC.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.24"
+      ],
+      "artifacts": [
+        "MockUSDC"
+      ]
     }
   }
 }

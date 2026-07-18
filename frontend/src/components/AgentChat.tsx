@@ -97,10 +97,10 @@ export default function AgentChat({ onNewPayments, onProtocolTrace }: Params) {
   const clientId = useRef('');
 
   useEffect(() => {
-    let id = localStorage.getItem('synergi_client_id');
+    let id = localStorage.getItem('endedrel_client_id');
     if (!id) {
       id = `client_${Math.random().toString(36).substring(2, 11)}`;
-      localStorage.setItem('synergi_client_id', id);
+      localStorage.setItem('endedrel_client_id', id);
     }
     clientId.current = id;
   }, []);
@@ -129,7 +129,7 @@ export default function AgentChat({ onNewPayments, onProtocolTrace }: Params) {
         return;
       }
 
-      const sseUrl = `${(process.env.NEXT_PUBLIC_API_URL || 'https://synergi.onrender.com').replace(/\/$/, '')}/api/agent/events?clientId=${clientId.current}`;
+      const sseUrl = `${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4002').replace(/\/$/, '')}/api/agent/events?clientId=${clientId.current}`;
       sse = new EventSource(sseUrl);
       eventSourceRef.current = sse;
 
@@ -257,7 +257,7 @@ export default function AgentChat({ onNewPayments, onProtocolTrace }: Params) {
     setAgentStatus('planning');
 
     try {
-      const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'https://synergi.onrender.com').replace(/\/$/, '')}/api/agent/query`, {
+      const response = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4002').replace(/\/$/, '')}/api/agent/query`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query: userMsg, clientId: clientId.current })

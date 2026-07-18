@@ -15,7 +15,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguageState] = useState<Language>('en');
 
   useEffect(() => {
-    const saved = localStorage.getItem('synergi_lang') as Language;
+    const saved = localStorage.getItem('endedrel_lang') as Language;
     if (saved && (saved === 'en' || saved === 'hi')) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setLanguageState(saved);
@@ -24,7 +24,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);
-    localStorage.setItem('synergi_lang', lang);
+    localStorage.setItem('endedrel_lang', lang);
   };
 
   const t = translations[language];

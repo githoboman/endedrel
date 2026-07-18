@@ -8,7 +8,7 @@ import ToolCatalog from '@/components/ToolCatalog';
 import ProtocolTrace from '@/components/ProtocolTrace';
 import { useI18n } from '@/lib/LanguageContext';
 
-const API = (process.env.NEXT_PUBLIC_API_URL || 'https://synergi.onrender.com').replace(/\/$/, '');
+const API = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4002').replace(/\/$/, '');
 
 export default function Home() {
   const { language, t } = useI18n();
@@ -40,7 +40,7 @@ export default function Home() {
   };
 
   const triggerStressTest = async () => {
-    const clientId = localStorage.getItem('synergi_client_id');
+    const clientId = localStorage.getItem('endedrel_client_id');
     if (!clientId) return;
     setIsStressTesting(true);
     try {

@@ -483,6 +483,11 @@ function createPaidRoute(config: PriceConfig) {
     // for the USDC price and gate access on it reaching PAYMENT_CONFIRMED.
     try {
       const payer = (req.headers['x-payer-address'] as string) || AGENT_ADDRESS;
+      if (!payer || !/^0x[0-9a-fA-F]{40}$/.test(payer)) {
+        res.status(400).json({ error: 'Missing/invalid payer address (x-payer-address header)' });
+        return;
+      }
+
       const order = await createOrder({
         dappOrderId: `job_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
         fromAddress: payer,
@@ -490,6 +495,13 @@ function createPaidRoute(config: PriceConfig) {
         tokenSymbol: 'USDC',
         tokenContract: process.env.USDC_ADDRESS || undefined,
       });
+
+      // A 402 (payment required) is expected on create, but we still need an
+      // order id to poll. If the gateway didn't return one, surface it.
+      if (!order?.order_id) {
+        res.status(502).json({ error: 'GOAT gateway returned no order_id', response: order });
+        return;
+      }
 
       const settled = await waitForConfirmation(order.order_id, { timeoutMs: 20000 });
       if (settled.state === 'PAYMENT_CONFIRMED' || settled.state === 'INVOICED') {
@@ -1137,7 +1149,7 @@ app.post('/api/agent/research', createPaidRoute(PRICES.research), async (req: Re
       transaction: `a2a_${Math.random().toString(16).slice(2, 14)}`,
       token: token,
       amount: '0.02 USDC',
-      explorerUrl: `${EXPLORER_BASE}/txid/0x${Math.random().toString(16).repeat(4).slice(0, 64)}?chain=testnet`,
+      explorerUrl: `${EXPLORER_BASE}/tx/0x${Array.from({length:64},()=>Math.floor(Math.random()*16).toString(16)).join('')}`,
       isA2A: true,
       parentJobId: jobId,
       depth: 1,
@@ -1210,7 +1222,7 @@ app.post('/api/agent/research', createPaidRoute(PRICES.research), async (req: Re
     transaction: `a2a_${Math.random().toString(16).slice(2, 14)}`,
     token: token,
     amount: `${PRICES.summarize.stxAmount} USDC`,
-    explorerUrl: `${EXPLORER_BASE}/txid/0x${Math.random().toString(16).repeat(4).slice(0, 64)}?chain=testnet`,
+    explorerUrl: `${EXPLORER_BASE}/tx/0x${Array.from({length:64},()=>Math.floor(Math.random()*16).toString(16)).join('')}`,
     isA2A: true,
     parentJobId: jobId,
     depth: 1,
@@ -1247,7 +1259,7 @@ app.post('/api/agent/research', createPaidRoute(PRICES.research), async (req: Re
     transaction: `a2a_${Math.random().toString(16).slice(2, 14)}`,
     token: token,
     amount: `${PRICES.sentiment.stxAmount} USDC`,
-    explorerUrl: `${EXPLORER_BASE}/txid/0x${Math.random().toString(16).repeat(4).slice(0, 64)}?chain=testnet`,
+    explorerUrl: `${EXPLORER_BASE}/tx/0x${Array.from({length:64},()=>Math.floor(Math.random()*16).toString(16)).join('')}`,
     isA2A: true,
     parentJobId: jobId,
     depth: 1,
@@ -1348,7 +1360,7 @@ app.post('/api/agent/code', createPaidRoute(PRICES.coding), async (req: Request,
     transaction: `a2a_${Math.random().toString(16).slice(2, 14)}`,
     token: token,
     amount: `${PRICES.codeExplain.stxAmount} USDC`,
-    explorerUrl: `${EXPLORER_BASE}/txid/0x${Math.random().toString(16).repeat(4).slice(0, 64)}?chain=testnet`,
+    explorerUrl: `${EXPLORER_BASE}/tx/0x${Array.from({length:64},()=>Math.floor(Math.random()*16).toString(16)).join('')}`,
     isA2A: true,
     parentJobId: jobId,
     depth: 1,
@@ -1431,7 +1443,7 @@ interface AgentExecutionResult {
     error?: string;
   }>;
   finalAnswer: string;
-  totalCost: { STX: number; sBTC_sats: number };
+  totalCost: { USDC: number };
   a2aDepth: number;
   protocolTrace: Array<{
     step: string;
@@ -1802,7 +1814,7 @@ Return ONLY valid JSON:
                 transaction: `heal_${toolId}_${Math.random().toString(16).slice(2, 10)}`,
                 token: token || 'USDC',
                 amount: `${fallbackAgent.priceSTX} USDC`,
-                explorerUrl: `${EXPLORER_BASE}/txid/0x${Math.random().toString(16).repeat(4).slice(0, 64)}?chain=testnet`,
+                explorerUrl: `${EXPLORER_BASE}/tx/0x${Array.from({length:64},()=>Math.floor(Math.random()*16).toString(16)).join('')}`,
                 selfHealed: true,
                 originalAgent: agentName,
                 fallbackAgent: fallbackName,
@@ -1842,7 +1854,7 @@ Return ONLY valid JSON:
             transaction: `sim_fallback_${toolId}_${Math.random().toString(16).slice(2, 10)}`,
             token: token || 'USDC',
             amount: `${price.stxAmount} USDC`,
-            explorerUrl: `${EXPLORER_BASE}/txid/0x${Math.random().toString(16).repeat(4).slice(0, 64)}?chain=testnet`,
+            explorerUrl: `${EXPLORER_BASE}/tx/0x${Array.from({length:64},()=>Math.floor(Math.random()*16).toString(16)).join('')}`,
             mode: 'simulation-fallback',
           };
           results.push({ tool: agentName, result: simResult, payment: simPayment });
@@ -1867,7 +1879,7 @@ Return ONLY valid JSON:
         transaction: `sim_${toolId}_${Math.random().toString(16).slice(2, 10)}`,
         token: token || 'USDC',
         amount: `${price.stxAmount} USDC`,
-        explorerUrl: `${EXPLORER_BASE}/txid/0x${Math.random().toString(16).repeat(4).slice(0, 64)}?chain=testnet`,
+        explorerUrl: `${EXPLORER_BASE}/tx/0x${Array.from({length:64},()=>Math.floor(Math.random()*16).toString(16)).join('')}`,
       };
 
       paymentLogs.push({
@@ -1994,8 +2006,7 @@ Return ONLY valid JSON:
     results,
     finalAnswer,
     totalCost: {
-      STX: Math.round(totalCost.STX * 10000) / 10000,
-      sBTC_sats: totalCost.sBTC_sats,
+      USDC: Math.round(totalCost.STX * 10000) / 10000,
     },
     a2aDepth,
     protocolTrace,
@@ -2130,7 +2141,7 @@ function createL2Settlement(
     transaction: `a2a_${Math.random().toString(16).slice(2, 14)}`,
     token,
     amount: `${price.stxAmount} USDC`,
-    explorerUrl: `${EXPLORER_BASE}/txid/0x${Math.random().toString(16).repeat(4).slice(0, 64)}?chain=testnet`,
+    explorerUrl: `${EXPLORER_BASE}/tx/0x${Array.from({length:64},()=>Math.floor(Math.random()*16).toString(16)).join('')}`,
     isA2A: true,
     depth,
   };
@@ -2295,7 +2306,7 @@ app.post('/api/kaggleingest', async (req: Request, res: Response) => {
       transaction: `ki_${Math.random().toString(16).slice(2, 14)}`,
       token: 'USDC',
       amount: '0.02 USDC',
-      explorerUrl: `${EXPLORER_BASE}/txid/0x${Math.random().toString(16).repeat(4).slice(0, 64)}?chain=testnet`,
+      explorerUrl: `${EXPLORER_BASE}/tx/0x${Array.from({length:64},()=>Math.floor(Math.random()*16).toString(16)).join('')}`,
       isA2A: false,
       depth: 0,
     });
@@ -2364,7 +2375,7 @@ app.post('/api/agent/stress-test', async (req: Request, res: Response) => {
         transaction: `tx_stress_${Math.random().toString(16).slice(2, 10)}`,
         token: 'USDC',
         amount: swapNeeded ? '0.005 sBTC' : `${agent.priceSTX} USDC`,
-        explorerUrl: 'https://explorer.stacks.co',
+        explorerUrl: `${EXPLORER_BASE}`,
         isA2A: true,
         depth: depth,
         metadata
