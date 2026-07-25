@@ -602,6 +602,7 @@ function sendSSETo(clientId: string, event: string, data: any) {
 // ═══════════════════════════════════════════════════════════════════════════
 
 app.get('/health', (_req: Request, res: Response) => {
+  const hasCredentials = goatCredentialsPresent();
   res.json({
     status: 'ok',
     uptime: process.uptime(),
@@ -610,6 +611,8 @@ app.get('/health', (_req: Request, res: Response) => {
     version: '2.0.0',
     agents: agentRegistry.length,
     totalPayments: paymentLogs.length,
+    goatCredentials: hasCredentials,
+    mode: hasCredentials ? 'live' : 'simulation',
   });
 });
 

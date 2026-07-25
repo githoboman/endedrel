@@ -237,40 +237,54 @@ export default function EconomyGraph({ refreshTrigger = 0 }: { refreshTrigger?: 
 
   return (
     <div className="glass-panel" style={{ padding: 16 }}>
-      {/* Stats bar */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-            ECONOMY TOPOLOGY
-          </span>
-          <span className="badge badge-stx" style={{ fontSize: '0.6rem' }}>LIVE</span>
-        </div>
-        <div style={{ display: 'flex', gap: 20 }}>
-          {[
-            { label: 'Payments', value: stats.totalPayments, color: '#06b6d4' },
-            { label: 'Volume', value: `${stats.totalVolume} USDC`, color: '#FF854B' },
-            { label: 'A2A Hires', value: stats.a2aCount, color: '#f59e0b' },
-            { label: 'Agents', value: stats.activeAgents, color: '#FF854B' },
-          ].map(s => (
-            <div key={s.label} style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '0.95rem', fontWeight: 700, color: s.color, fontFamily: 'var(--font-mono)' }}>{s.value}</div>
-              <div style={{ fontSize: '0.6rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{s.label}</div>
+      {/* Stat tiles — summary before detail */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(4, 1fr)',
+        gap: 10,
+        marginBottom: 14,
+      }}>
+        {[
+          { label: 'Payments', value: stats.totalPayments, accent: 'var(--accent-500)' },
+          { label: 'Volume', value: `${stats.totalVolume}`, unit: 'USDC', accent: 'var(--btc)' },
+          { label: 'A2A Hires', value: stats.a2aCount, accent: 'var(--accent-500)' },
+          { label: 'Agents', value: stats.activeAgents, accent: 'var(--success)' },
+        ].map(s => (
+          <div key={s.label} style={{
+            padding: '10px 12px',
+            border: '2px solid var(--border-strong)',
+            borderRadius: 'var(--radius-sm)',
+            background: 'var(--surface)',
+            boxShadow: '2px 2px 0 0 var(--border-strong)',
+          }}>
+            <div style={{ fontSize: '0.55rem', color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.1em', fontFamily: 'var(--font-mono)', fontWeight: 700, marginBottom: 4 }}>{s.label}</div>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+              <span style={{ fontSize: '1.25rem', fontWeight: 800, color: s.accent, fontFamily: 'var(--font-mono)', fontVariantNumeric: 'tabular-nums', lineHeight: 1 }}>{s.value}</span>
+              {s.unit && <span style={{ fontSize: '0.6rem', color: 'var(--text-tertiary)', fontFamily: 'var(--font-mono)', fontWeight: 700 }}>{s.unit}</span>}
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+        <span style={{ fontSize: '0.7rem', fontWeight: 800, color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+          Economy Topology
+        </span>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: '0.6rem', fontWeight: 700, color: 'var(--success)', fontFamily: 'var(--font-mono)', letterSpacing: '0.1em' }}>
+          <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--success)', boxShadow: '0 0 6px var(--success)' }} /> LIVE
+        </span>
       </div>
       {/* Canvas */}
-      <div style={{ position: 'relative', borderRadius: 10, overflow: 'hidden', border: '1px solid #e2e8f0', background: '#ffffff' }}>
+      <div style={{ position: 'relative', borderRadius: 'var(--radius-sm)', overflow: 'hidden', border: '2px solid var(--border-strong)', background: 'var(--bg-tertiary)' }}>
         <canvas ref={canvasRef} style={{ width: '100%', height: 260, display: 'block' }} />
         {/* Legend */}
         <div style={{
           position: 'absolute', bottom: 8, left: 12,
-          display: 'flex', gap: 14, fontSize: '0.6rem', color: '#64748b',
+          display: 'flex', gap: 14, fontSize: '0.6rem', color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)',
         }}>
           {[
-            { color: '#FF854B', label: 'User → Manager' },
-            { color: '#FF854B', label: 'Manager → Worker' },
-            { color: '#f59e0b', label: 'A2A Recursive' },
+            { color: 'var(--accent-500)', label: 'User → Manager' },
+            { color: 'var(--accent-500)', label: 'Manager → Worker' },
+            { color: 'var(--btc)', label: 'A2A Recursive' },
           ].map(l => (
             <div key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
               <div style={{ width: 8, height: 3, borderRadius: 1, background: l.color }} />

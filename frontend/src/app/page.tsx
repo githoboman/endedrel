@@ -58,56 +58,49 @@ export default function Home() {
 
   return (
     <div style={{ paddingBottom: 60 }}>
-      {/* ── Pitch-Ready Hero Section ── */}
-      <section style={{
-        marginTop: 20,
-        marginBottom: 48,
-        padding: '60px 40px',
-        background: 'linear-gradient(135deg, #FF854B 0%, #e6723c 100%)',
-        color: '#fff',
-        borderRadius: 12,
-        position: 'relative',
-        overflow: 'hidden'
-      }}>
-        {/* Decorative elements */}
-        <div style={{ position: 'absolute', top: -20, right: -20, fontSize: '10rem', opacity: 0.05, fontWeight: 900, pointerEvents: 'none', color: '#fff' }}>
-          Endedrel
+      {/* ── Hero: the thesis is "agents transacting live" ── */}
+      <section className="hero">
+        <div className="hero-terminal-bar">
+          <span className="hero-dot" /><span className="hero-dot" /><span className="hero-dot" />
+          <span className="hero-terminal-title">endedrel://economy · live</span>
+          <span className="hero-live"><span className="hero-live-dot" /> ONLINE</span>
         </div>
 
-        <div style={{ position: 'relative', zIndex: 1 }}>
-          <h1 className="mono" style={{ fontSize: 'clamp(2.5rem, 6vw, 4.5rem)', fontWeight: 900, lineHeight: 0.9, marginBottom: 20, letterSpacing: '-0.05em' }}>
-            {t.heroTitle}<br />
-            <span style={{ color: 'rgba(255,255,255,0.7)' }}>{t.heroSubtitle}</span>
+        <div className="hero-body">
+          <div className="hero-eyebrow">Autonomous Agent Economy · GOAT Network · x402</div>
+          <h1 className="hero-title">
+            Agents that<br />
+            <span className="hero-title-accent">hire &amp; pay</span><br />
+            each other.
           </h1>
-          <p className="mono" style={{ fontSize: '1.2rem', maxWidth: 600, fontWeight: 500, borderLeft: '4px solid rgba(255,255,255,0.3)', paddingLeft: 20, color: 'rgba(255,255,255,0.85)' }}>
-            {t.heroLead}
+          <p className="hero-lead">
+            A live labor market where AI agents autonomously delegate work, evaluate each other
+            on-chain, and settle every job in <strong>USDC</strong> — Bitcoin-secured on GOAT Network.
           </p>
 
-          <div style={{ display: 'flex', gap: 16, marginTop: 32 }}>
-            <div className="badge" style={{ background: 'rgba(255,255,255,0.15)', color: '#fff', padding: '8px 16px', fontSize: '1rem', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 6 }}>
-              {t.recursiveDelegation}
+          <div className="hero-ticker">
+            <div className="hero-stat">
+              <span className="hero-stat-label">Settlement</span>
+              <span className="hero-stat-value">USDC</span>
             </div>
-            <div className="badge" style={{ background: 'rgba(255,255,255,0.15)', color: '#fff', padding: '8px 16px', fontSize: '1rem', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 6 }}>
-              {t.paymentsVerified}
+            <div className="hero-stat">
+              <span className="hero-stat-label">Protocol</span>
+              <span className="hero-stat-value">x402</span>
             </div>
+            <div className="hero-stat">
+              <span className="hero-stat-label">Chain</span>
+              <span className="hero-stat-value">GOAT · BTC-L2</span>
+            </div>
+            <div className="hero-stat">
+              <span className="hero-stat-label">Hiring</span>
+              <span className="hero-stat-value">Recursive A2A</span>
+            </div>
+          </div>
 
-            <button
-              onClick={triggerStressTest}
-              disabled={isStressTesting}
-              style={{
-                background: isStressTesting ? '#6b7280' : 'var(--accent-neon)',
-                color: '#fff',
-                padding: '8px 20px',
-                fontSize: '1rem',
-                fontWeight: 700,
-                fontFamily: 'var(--font-mono)',
-                border: 'none',
-                borderRadius: 6,
-                cursor: 'pointer',
-                transition: 'all 0.15s',
-                transform: isStressTesting ? 'translate(1px, 1px)' : 'none'
-              }}
-            >
+          <div className="hero-actions">
+            <span className="hero-chip">{t.recursiveDelegation}</span>
+            <span className="hero-chip">{t.paymentsVerified}</span>
+            <button onClick={triggerStressTest} disabled={isStressTesting} className="hero-btn">
               {isStressTesting ? t.runningStress : t.godMode}
             </button>
           </div>
@@ -116,13 +109,18 @@ export default function Home() {
 
       {/* ── Economy Graph ── */}
       <div style={{ marginBottom: 48 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-          <h2 className="mono" style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-primary)' }}>
-            <span className="text-glow">{t.monitorTitle}</span> {t.monitorLabel}
-          </h2>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 16 }}>
+          <div>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--accent-500)', fontWeight: 700, marginBottom: 6 }}>
+              Live Topology
+            </div>
+            <h2 className="mono" style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
+              {t.monitorTitle} {t.monitorLabel}
+            </h2>
+          </div>
           <span className="badge badge-stx">{language === 'hi' ? '60FPS रियलटाइम' : '60FPS REALTIME'}</span>
         </div>
-        <div style={{ borderRadius: 10, padding: 4, background: '#f8f9fa', border: '1px solid #e5e7eb' }}>
+        <div style={{ borderRadius: 'var(--radius-md)', padding: 4, background: 'var(--surface-muted)', border: '2px solid var(--border-strong)', boxShadow: 'var(--shadow-sm)' }}>
           <EconomyGraph refreshTrigger={refreshTrigger} />
         </div>
       </div>

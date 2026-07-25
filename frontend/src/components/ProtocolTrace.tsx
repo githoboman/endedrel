@@ -100,14 +100,12 @@ export default function ProtocolTrace({ traces, hiringDecisions }: Props) {
 
 function TraceCard({ trace, index, showTechnical }: { trace: ProtocolTraceEntry; index: number; showTechnical: boolean }) {
   const [expanded, setExpanded] = useState(false);
-  const statusColor = trace.httpStatus === 402 ? '#f59e0b' : trace.httpStatus === 200 ? '#10b981' : '#ef4444';
+  const statusColor = trace.httpStatus === 402 ? 'var(--btc)' : trace.httpStatus === 200 ? 'var(--success)' : 'var(--error)';
 
-  const formatTimestamp = (ts: string | number) => {
-    try {
-      return new Date(ts).toLocaleTimeString();
-    } catch {
-      return 'N/A';
-    }
+  const formatTimestamp = (ts: string | number | undefined) => {
+    if (ts === undefined || ts === null || ts === '') return '—';
+    const d = new Date(ts);
+    return Number.isNaN(d.getTime()) ? '—' : d.toLocaleTimeString();
   };
 
   return (

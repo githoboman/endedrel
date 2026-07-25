@@ -98,46 +98,50 @@ function PaymentCard({ payment }: { payment: Payment }) {
   const { t } = useI18n();
   const shortAddr = (addr: string) =>
     addr ? `${addr.slice(0, 6)}…${addr.slice(-4)}` : '???';
-  const timeAgo = (ts: number) => {
-
-    const diff = Date.now() - ts;
-    if (diff < 60000) return `${Math.floor(diff / 1000)}s ago`;
+  const timeAgo = (ts: number | string) => {
+    // Backend sends ISO strings; coerce to epoch ms and guard against NaN.
+    const ms = typeof ts === 'number' ? ts : Date.parse(ts);
+    if (!Number.isFinite(ms)) return 'just now';
+    const diff = Date.now() - ms;
+    if (diff < 0 || diff < 60000) return `${Math.max(0, Math.floor(diff / 1000))}s ago`;
     if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
-    return `${Math.floor(diff / 3600000)}h ago`;
+    if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
+    return `${Math.floor(diff / 86400000)}d ago`;
   };
 
   return (
     <div style={{
       padding: '10px 12px', marginBottom: 6,
-      background: payment.isA2A ? 'rgba(245,158,11,0.06)' : '#fafbfc',
-      borderRadius: 8, border: `1px solid ${payment.isA2A ? 'rgba(245,158,11,0.15)' : 'var(--border-subtle)'}`,
+      background: payment.isA2A ? 'var(--accent-light)' : 'var(--surface)',
+      borderRadius: 'var(--radius-sm)',
+      border: `2px solid ${payment.isA2A ? 'var(--btc)' : 'var(--border-subtle)'}`,
       transition: 'all 0.2s',
     }}>
       {/* Row 1: endpoint + amount */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4, gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
           <span style={{
             fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-primary)',
-            fontFamily: 'var(--font-mono)',
+            fontFamily: 'var(--font-mono)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
           }}>
             {payment.endpoint}
           </span>
-          {payment.isA2A && <span className="badge badge-a2a" style={{ fontSize: '0.5rem' }}>{t.a2a}</span>}
+          {payment.isA2A && <span className="badge badge-a2a" style={{ fontSize: '0.5rem', background: 'var(--btc)', color: '#0c0a09', borderColor: 'var(--border-strong)' }}>{t.a2a}</span>}
           {payment.depth > 0 && (
-            <span style={{ fontSize: '0.5rem', color: '#f59e0b', fontFamily: 'var(--font-mono)' }}>
+            <span style={{ fontSize: '0.5rem', color: 'var(--btc)', fontFamily: 'var(--font-mono)', fontWeight: 700 }}>
               {t.depth}:{payment.depth}
             </span>
           )}
         </div>
-        <span className={`badge badge-${payment.token.toLowerCase() === 'sbtc' ? 'sbtc' : 'stx'}`} style={{ fontSize: '0.55rem' }}>
-          {payment.amount} {payment.token}
+        <span className="badge" style={{ fontSize: '0.6rem', flexShrink: 0, background: 'var(--surface-muted)', color: 'var(--text-primary)', fontVariantNumeric: 'tabular-nums' }}>
+          {payment.amount}
         </span>
       </div>
 
       {/* Row 2: payer → worker */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.6rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.6rem', color: 'var(--text-tertiary)', fontFamily: 'var(--font-mono)' }}>
         <span>{shortAddr(payment.payer)}</span>
-        <span style={{ color: payment.isA2A ? '#f59e0b' : 'var(--accent-cyan)' }}>→</span>
+        <span style={{ color: payment.isA2A ? 'var(--btc)' : 'var(--accent-500)', fontWeight: 700 }}>→</span>
         <span>{shortAddr(payment.worker)}</span>
         <span style={{ marginLeft: 'auto' }}>{timeAgo(payment.timestamp)}</span>
       </div>

@@ -1,44 +1,92 @@
 :root {
-  /* ── Neo-Brutalist Palette ── */
-  --bg-primary: #ffffff;
-  --bg-secondary: #f4f4f5; /* Zinc 100 */
-  --bg-tertiary: #e4e4e7; /* Zinc 200 */
+  /* ── Neo-Brutalist Palette — warm neutrals biased toward the orange accent ── */
+  --bg-primary: #faf9f7;    /* warm off-white, not pure #fff */
+  --bg-secondary: #f2efea;  /* warm sand */
+  --bg-tertiary: #e7e2da;
 
-  --text-primary: #09090b; /* Zinc 950 */
-  --text-secondary: #52525b; /* Zinc 600 */
-  --text-tertiary: #a1a1aa; /* Zinc 400 */
-  --text-inverse: #ffffff;
+  --text-primary: #0c0a09;  /* warm near-black */
+  --text-secondary: #57534e; /* warm stone 600 */
+  --text-tertiary: #a8a29e;  /* warm stone 400 */
+  --text-inverse: #faf9f7;
 
-  /* Accent: International Orange */
+  /* Accent: International Orange (brand) */
   --accent-500: #ff4f00;
   --accent-hover: #cc3f00;
   --accent-light: #fff1eb;
 
-  /* Status */
-  --success: #10b981;
-  --warning: #f59e0b;
-  --error: #ef4444;
-  --info: #3b82f6;
+  /* Secondary: Bitcoin orange — reserved for on-chain / settlement moments */
+  --btc: #f7931a;
+
+  /* Semantic (separate from accent) */
+  --success: #059669;
+  --warning: #d97706;
+  --error: #dc2626;
+  --info: #2563eb;
 
   /* Structural */
   --border-width: 2px;
-  --border-strong: #09090b;
-  --border-subtle: #e4e4e7;
+  --border-strong: #0c0a09;
+  --border-subtle: #e7e2da;
 
   --radius-sm: 4px;
   --radius-md: 8px;
   --radius-lg: 12px;
 
   /* Shadows: Hard & Sharp */
-  --shadow-sm: 2px 2px 0 0 #09090b;
-  --shadow-md: 4px 4px 0 0 #09090b;
-  --shadow-lg: 8px 8px 0 0 #09090b;
-
+  --shadow-sm: 2px 2px 0 0 var(--border-strong);
+  --shadow-md: 4px 4px 0 0 var(--border-strong);
+  --shadow-lg: 8px 8px 0 0 var(--border-strong);
   --shadow-neon: 4px 4px 0 0 var(--accent-500);
+
+  /* Panel/card surfaces (themable) */
+  --surface: #ffffff;
+  --surface-muted: #f2efea;
 
   /* Fonts */
   --font-sans: "Inter", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", "Space Mono", monospace;
+
+  /* Back-compat aliases (older components reference these names) */
+  --text-muted: var(--text-tertiary);
+  --accent-neon: var(--accent-500);
+  --accent-cyan: #0ea5e9;
+  --accent-warning: var(--warning);
+  --bg-900: var(--bg-tertiary);
+}
+
+/* ── Dark theme — warm near-black ground, same brutalist logic ── */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-primary: #0c0a09;
+    --bg-secondary: #17130f;
+    --bg-tertiary: #211b15;
+    --text-primary: #f5f3f0;
+    --text-secondary: #b8b0a8;
+    --text-tertiary: #78716c;
+    --text-inverse: #0c0a09;
+    --accent-light: #2a1509;
+    --border-strong: #f5f3f0;
+    --border-subtle: #2a2420;
+    --shadow-sm: 2px 2px 0 0 var(--accent-500);
+    --shadow-md: 4px 4px 0 0 var(--accent-500);
+    --shadow-lg: 8px 8px 0 0 var(--accent-500);
+    --surface: #17130f;
+    --surface-muted: #211b15;
+  }
+}
+:root[data-theme="light"] {
+  --bg-primary: #faf9f7; --bg-secondary: #f2efea; --bg-tertiary: #e7e2da;
+  --text-primary: #0c0a09; --text-secondary: #57534e; --text-tertiary: #a8a29e;
+  --border-strong: #0c0a09; --border-subtle: #e7e2da; --accent-light: #fff1eb;
+  --shadow-sm: 2px 2px 0 0 #0c0a09; --shadow-md: 4px 4px 0 0 #0c0a09; --shadow-lg: 8px 8px 0 0 #0c0a09;
+  --surface: #ffffff; --surface-muted: #f2efea;
+}
+:root[data-theme="dark"] {
+  --bg-primary: #0c0a09; --bg-secondary: #17130f; --bg-tertiary: #211b15;
+  --text-primary: #f5f3f0; --text-secondary: #b8b0a8; --text-tertiary: #78716c;
+  --border-strong: #f5f3f0; --border-subtle: #2a2420; --accent-light: #2a1509;
+  --shadow-sm: 2px 2px 0 0 #ff4f00; --shadow-md: 4px 4px 0 0 #ff4f00; --shadow-lg: 8px 8px 0 0 #ff4f00;
+  --surface: #17130f; --surface-muted: #211b15;
 }
 
 * {
@@ -64,14 +112,14 @@ body {
 
 /* ── Panels ── */
 .glass-panel {
-  background: #ffffff;
+  background: var(--surface);
   border: var(--border-width) solid var(--border-strong);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-md);
 }
 
 .neon-panel {
-  background: #ffffff;
+  background: var(--surface);
   border: var(--border-width) solid var(--accent-500);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-neon);
@@ -148,8 +196,21 @@ body {
 }
 
 .badge-stx {
-  background: #5546ff; /* Stacks Purple */
-  color: #ffffff;
+  background: var(--btc); /* Bitcoin orange */
+  color: #0c0a09;
+  border-color: var(--border-strong);
+}
+
+.badge-a2a {
+  background: var(--btc);
+  color: #0c0a09;
+  border-color: var(--border-strong);
+  text-transform: uppercase;
+}
+
+.badge-sbtc {
+  background: var(--surface-muted);
+  color: var(--text-primary);
   border-color: var(--border-strong);
 }
 
@@ -232,4 +293,157 @@ body {
   50% {
     opacity: 1;
   }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Hero — live terminal / ticker. The thesis: agents transacting.
+   ═══════════════════════════════════════════════════════════════ */
+.hero {
+  margin: 20px 0 56px;
+  border: var(--border-width) solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  background: var(--surface);
+}
+
+/* Terminal chrome */
+.hero-terminal-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: #0c0a09;
+  border-bottom: var(--border-width) solid var(--border-strong);
+}
+.hero-dot {
+  width: 11px; height: 11px; border-radius: 50%;
+  background: #3f3f46; display: inline-block;
+}
+.hero-dot:nth-child(1) { background: #ff5f57; }
+.hero-dot:nth-child(2) { background: #febc2e; }
+.hero-dot:nth-child(3) { background: #28c840; }
+.hero-terminal-title {
+  margin-left: 10px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: #a8a29e;
+  letter-spacing: 0.04em;
+}
+.hero-live {
+  margin-left: auto;
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--font-mono); font-size: 0.68rem; font-weight: 700;
+  color: #28c840; letter-spacing: 0.12em;
+}
+.hero-live-dot {
+  width: 7px; height: 7px; border-radius: 50%; background: #28c840;
+  box-shadow: 0 0 8px #28c840; animation: pulse-live 1.6s ease-in-out infinite;
+}
+@keyframes pulse-live { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+/* Body — dark ground so the economy reads as a machine surface, one deliberate
+   commitment; content within is high-contrast. */
+.hero-body {
+  position: relative;
+  padding: clamp(32px, 5vw, 64px);
+  background:
+    linear-gradient(180deg, #0c0a09 0%, #171310 100%);
+  color: #f5f3f0;
+}
+.hero-body::before {
+  /* faint scanline grid — atmosphere, not decoration */
+  content: "";
+  position: absolute; inset: 0;
+  background-image: repeating-linear-gradient(
+    0deg, rgba(255,79,0,0.035) 0px, rgba(255,79,0,0.035) 1px, transparent 1px, transparent 4px);
+  pointer-events: none;
+}
+.hero-eyebrow {
+  position: relative;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--accent-500);
+  font-weight: 700;
+  margin-bottom: 22px;
+}
+.hero-title {
+  position: relative;
+  font-family: var(--font-mono);
+  font-weight: 800;
+  font-size: clamp(2.6rem, 7vw, 5.4rem);
+  line-height: 0.94;
+  letter-spacing: -0.045em;
+  text-wrap: balance;
+  margin-bottom: 26px;
+}
+.hero-title-accent { color: var(--accent-500); }
+.hero-lead {
+  position: relative;
+  max-width: 60ch;
+  font-size: clamp(1rem, 1.4vw, 1.18rem);
+  line-height: 1.6;
+  color: #c9c2ba;
+  border-left: 3px solid var(--accent-500);
+  padding-left: 18px;
+}
+.hero-lead strong { color: var(--btc); font-weight: 700; }
+
+/* Ticker of live economic facts */
+.hero-ticker {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0;
+  margin-top: 36px;
+  border: 1px solid rgba(245,243,240,0.14);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.hero-stat {
+  display: flex; flex-direction: column; gap: 6px;
+  padding: 16px 20px;
+  border-right: 1px solid rgba(245,243,240,0.14);
+}
+.hero-stat:last-child { border-right: none; }
+.hero-stat-label {
+  font-family: var(--font-mono); font-size: 0.62rem; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase; color: #78716c;
+}
+.hero-stat-value {
+  font-family: var(--font-mono); font-size: 1.15rem; font-weight: 700;
+  color: #f5f3f0; font-variant-numeric: tabular-nums;
+}
+.hero-actions {
+  position: relative;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 12px;
+  margin-top: 32px;
+}
+.hero-chip {
+  font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700;
+  padding: 9px 15px; border-radius: var(--radius-sm);
+  background: rgba(255,79,0,0.12);
+  border: 1px solid rgba(255,79,0,0.4);
+  color: #ff875c; text-transform: uppercase; letter-spacing: 0.04em;
+}
+.hero-btn {
+  font-family: var(--font-mono); font-size: 0.8rem; font-weight: 800;
+  padding: 10px 22px; cursor: pointer;
+  text-transform: uppercase; letter-spacing: 0.05em;
+  background: var(--accent-500); color: #fff;
+  border: 2px solid #fff;
+  box-shadow: 4px 4px 0 0 rgba(255,255,255,0.25);
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+.hero-btn:hover:not(:disabled) { transform: translate(-1px,-1px); box-shadow: 5px 5px 0 0 rgba(255,255,255,0.35); }
+.hero-btn:active:not(:disabled) { transform: translate(2px,2px); box-shadow: 0 0 0 0; }
+.hero-btn:disabled { background: #57534e; border-color: #78716c; cursor: wait; }
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-live-dot { animation: none; }
+}
+@media (max-width: 640px) {
+  .hero-stat:nth-child(2n) { border-right: none; }
 }

@@ -101,7 +101,7 @@ function AgentCard({ tool }: { tool: Tool }) {
     <div
       className="agent-card"
       style={{
-        background: 'var(--bg-primary)',
+        background: 'var(--surface)',
         border: 'var(--border-width) solid var(--border-strong)',
         borderRadius: 'var(--radius-sm)',
         padding: 20,
@@ -138,13 +138,17 @@ function AgentCard({ tool }: { tool: Tool }) {
             <Icon size={24} color={color} strokeWidth={2.5} />
           </div>
            <div>
-             <h4 style={{ fontSize: '1rem', fontWeight: 800, margin: 0, textTransform: 'uppercase', letterSpacing: '-0.02em', color: '#111111' }}>{tool.name}</h4>
-             <span className="mono" style={{ fontSize: '0.7rem', color: '#111111', fontWeight: 600 }}>{tool.category}</span>
+             <h4 style={{ fontSize: '1rem', fontWeight: 800, margin: 0, textTransform: 'uppercase', letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>{tool.name}</h4>
+             <span className="mono" style={{ fontSize: '0.68rem', color: color, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{tool.category}</span>
            </div>
+        </div>
+        <div className="mono" title="reputation" style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-tertiary)', display: 'flex', alignItems: 'center', gap: 4 }}>
+          <span style={{ width: 6, height: 6, borderRadius: '50%', background: tool.reputation >= 90 ? 'var(--success)' : tool.reputation >= 70 ? 'var(--btc)' : 'var(--text-tertiary)' }} />
+          {tool.reputation}
         </div>
       </div>
 
-      <p style={{ fontSize: '0.85rem', color: '#111111', lineHeight: 1.5, marginBottom: 20, flex: 1, fontWeight: 500 }}>
+      <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: 20, flex: 1, fontWeight: 400 }}>
         {tool.description}
       </p>
 
@@ -184,7 +188,7 @@ function AgentCard({ tool }: { tool: Tool }) {
           )}
         </div>
 
-          <div className="mono" style={{ fontSize: '0.9rem', fontWeight: 800, color: '#111111' }}>
+          <div className="mono" style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--text-primary)', fontVariantNumeric: 'tabular-nums' }}>
             {Number(tool.price) > 0 ? `${tool.price} ${tool.token}` : 'FREE'}
           </div>
       </div>

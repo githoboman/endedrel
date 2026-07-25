@@ -15,7 +15,7 @@ export const EXTERNAL_AGENTS: AgentCard[] = [
   {
     id: 'auditor-zero',
     name: 'Auditor Zero (Security)',
-    description: 'Top-tier smart contract auditor — finds vulnerabilities in Clarity and Solidity',
+    description: 'Top-tier smart contract auditor — finds vulnerabilities in Solidity and EVM bytecode',
     capabilities: ['smart-contract-audit', 'gas-optimization'],
     protocol: 'MCP-Connect',
     price: { amount: 0.05, unit: 'STX' },

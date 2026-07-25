@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { DollarSign, Cpu, ArrowRight } from 'lucide-react';
+import { fmtCost } from '@/lib/format';
 
 interface AgentHire {
   agent: string;
@@ -143,10 +144,10 @@ export const A2ATopology = ({ hires }: { hires: AgentHire[] }) => {
             <text
               x={node.x + 10}
               y={node.y + 45}
-              fill="var(--accent-neon)"
-              style={{ fontSize: '12px', fontFamily: 'var(--font-mono)' }}
+              fill="var(--btc)"
+              style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', fontWeight: 700 }}
             >
-              {node.cost} {node.currency}
+              {fmtCost(node.cost, node.currency)}
             </text>
             <rect
                x={node.x}
