@@ -23,7 +23,7 @@ export default function LicensePage() {
         <section>
           <h2>1. Open Source Foundation</h2>
           <p>
-            Endedrel is committed to the open-source ethos of the GOAT Network and Bitcoin communities.
+            Endedrel is committed to the open-source ethos of the BOT Network and Bitcoin communities.
             The core protocol and smart contracts are licensed under the <strong>MIT License</strong>.
           </p>
         </section>

@@ -1,16 +1,16 @@
 {
   "name": "endedrel-contracts",
   "version": "1.0.0",
-  "description": "Endedrel Agent Registry — Solidity contracts for GOAT Network",
+  "description": "Endedrel Agent Registry — Solidity contracts for BOT Chain",
   "private": true,
   "scripts": {
     "compile": "hardhat compile",
     "test": "hardhat test",
-    "deploy:testnet": "hardhat run scripts/deploy.ts --network goatTestnet",
-    "deploy:mainnet": "hardhat run scripts/deploy.ts --network goatMainnet"
+    "deploy:botTestnet": "hardhat run scripts/deploy.ts --network botTestnet",
+    "deploy:botMainnet": "hardhat run scripts/deploy.ts --network botMainnet"
   },
   "keywords": [
-    "goat-network",
+    "bot-chain",
     "x402",
     "ai-agents",
     "solidity",

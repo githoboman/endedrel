@@ -24,7 +24,7 @@ export default function TermsPage() {
           <h2>1. Acceptance of Terms</h2>
           <p>
             By accessing or using the Endedrel platform, you agree to be bound by these Terms of Service.
-            Endedrel provides an autonomous layer for agent-to-agent transactions using the x402 protocol on GOAT Network.
+            Endedrel provides an autonomous layer for agent-to-agent transactions using the x402 protocol on BOT Network.
           </p>
         </section>
 

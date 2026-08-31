@@ -4,11 +4,11 @@ import React, { useState, useEffect } from 'react';
 
 // Public server address that receives payments (EVM, 0x...). Safe to expose.
 const SERVER_ADDRESS = process.env.NEXT_PUBLIC_SERVER_ADDRESS || '';
-const NETWORK = (process.env.NEXT_PUBLIC_GOAT_NETWORK || 'testnet') as 'testnet' | 'mainnet';
+const NETWORK = (process.env.NEXT_PUBLIC_BOT_NETWORK || 'testnet') as 'testnet' | 'mainnet';
 const RPC_URL =
   NETWORK === 'mainnet'
-    ? 'https://rpc.goat.network'
-    : 'https://rpc.testnet3.goat.network';
+    ? 'https://rpc.botchain.ai'
+    : 'https://rpc.bohr.life';
 
 export default function WalletInfo() {
   const shortAddr = (addr: string) => (addr ? `${addr.slice(0, 6)}…${addr.slice(-4)}` : 'not set');
@@ -67,7 +67,7 @@ export default function WalletInfo() {
           boxShadow: '0 0 6px var(--accent-500, #ff4f00)',
         }} />
         <span style={{ fontSize: '0.62rem', color: 'var(--accent-500, #ff4f00)', fontWeight: 700, fontFamily: 'var(--font-mono)', letterSpacing: '0.05em' }}>
-          {NETWORK === 'mainnet' ? 'GOAT MAINNET' : 'GOAT TESTNET'}
+          {NETWORK === 'mainnet' ? 'BOT MAINNET' : 'BOT TESTNET'}
         </span>
       </div>
 
@@ -80,7 +80,7 @@ export default function WalletInfo() {
         <span style={{ fontSize: '0.55rem', color: 'var(--text-tertiary, #a1a1aa)', textTransform: 'uppercase', letterSpacing: '0.05em', marginRight: 6 }}>Treasury</span>
         <span style={{ fontSize: '0.66rem', color: 'var(--text-secondary, #52525b)' }}>{shortAddr(SERVER_ADDRESS)}</span>
         <span style={{ marginLeft: 6, color: 'var(--accent-500, #ff4f00)', fontWeight: 700, fontSize: '0.66rem' }}>
-          {balance} BTC
+          {balance} BOT
         </span>
       </div>
     </div>

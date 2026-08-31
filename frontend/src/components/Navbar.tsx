@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import WalletInfo from './WalletInfo';
 import ConnectWalletButton from './ConnectWalletButton';
 import { useI18n } from '@/lib/LanguageContext';
+import ThemeToggle from './ThemeToggle';
 
 const API = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4002').replace(/\/$/, '');
 
@@ -27,8 +28,8 @@ export default function Navbar() {
         if (cancelled) return;
         if (!res.ok) { setBackendMode('offline'); return; }
         const json = await res.json().catch(() => ({}));
-        // The backend exposes { goatCredentials: boolean } or similar
-        const hasCredentials = json.goatCredentials === true || json.mode === 'live';
+        // The backend exposes { BOTCredentials: boolean } or similar
+        const hasCredentials = json.BOTCredentials === true || json.mode === 'live';
         setBackendMode(hasCredentials ? 'live' : 'simulation');
       } catch {
         if (!cancelled) setBackendMode('offline');
@@ -44,7 +45,8 @@ export default function Navbar() {
   }, []);
 
   const navItems = [
-    { name: t.dashboard, path: '/' },
+    { name: 'Home', path: '/' },
+    { name: t.dashboard, path: '/app' },
     { name: t.agents, path: '/agents' },
     { name: t.tools, path: '/tools' },
     { name: t.docs, path: '/docs' },
@@ -62,7 +64,7 @@ export default function Navbar() {
       bg: 'rgba(40,200,64,0.08)',
       border: 'rgba(40,200,64,0.35)',
       text: '#28c840',
-      label: 'LIVE · GOAT',
+      label: 'LIVE · BOT',
     },
     simulation: {
       dot: '#f59e0b',
@@ -97,7 +99,7 @@ export default function Navbar() {
       marginBottom: 32,
       position: 'sticky',
       top: 0,
-      backgroundColor: 'rgba(255, 255, 255, 0.95)',
+      backgroundColor: 'var(--surface)',
       zIndex: 100,
       backdropFilter: 'blur(12px)',
     }}>
@@ -138,7 +140,7 @@ export default function Navbar() {
           <div className="mono" style={{
             fontWeight: 800,
             fontSize: '1.4rem',
-            color: '#111827',
+            color: 'var(--text-primary)',
             letterSpacing: '-0.04em',
             lineHeight: 1,
             display: 'flex',
@@ -160,7 +162,7 @@ export default function Navbar() {
           </div>
           <div className="mono" style={{
             fontSize: '0.62rem',
-            color: '#6b7280',
+            color: 'var(--text-secondary)',
             marginTop: 3,
             letterSpacing: '0.05em',
             textTransform: 'uppercase',
@@ -181,24 +183,24 @@ export default function Navbar() {
               style={{
                 fontSize: '0.82rem',
                 fontWeight: 600,
-                color: isActive(item.path) ? '#111827' : '#6b7280',
+                color: isActive(item.path) ? 'var(--text-primary)' : 'var(--text-secondary)',
                 textDecoration: 'none',
                 padding: '7px 12px',
                 borderRadius: 7,
                 transition: 'all 0.2s ease',
-                backgroundColor: isActive(item.path) ? '#f0f2f5' : 'transparent',
-                border: isActive(item.path) ? '1px solid #e5e7eb' : '1px solid transparent',
+                backgroundColor: isActive(item.path) ? 'var(--surface-muted)' : 'transparent',
+                border: isActive(item.path) ? '1px solid var(--border-strong)' : '1px solid transparent',
                 cursor: 'pointer',
               }}
               onMouseEnter={(e) => {
                 if (!isActive(item.path)) {
-                  e.currentTarget.style.color = '#111827';
-                  e.currentTarget.style.backgroundColor = '#f8f9fa';
+                  e.currentTarget.style.color = 'var(--text-primary)';
+                  e.currentTarget.style.backgroundColor = 'var(--surface-muted)';
                 }
               }}
               onMouseLeave={(e) => {
                 if (!isActive(item.path)) {
-                  e.currentTarget.style.color = '#6b7280';
+                  e.currentTarget.style.color = 'var(--text-secondary)';
                   e.currentTarget.style.backgroundColor = 'transparent';
                 }
               }}
@@ -211,9 +213,9 @@ export default function Navbar() {
         {/* ── Mode Badge (always visible) ── */}
         <div
           title={backendMode === 'simulation'
-            ? 'Running in Simulation Mode — no GOAT x402 credentials set'
+            ? 'Running in Simulation Mode — no BOT x402 credentials set'
             : backendMode === 'live'
-              ? 'Connected to GOAT Network with live x402 payments'
+              ? 'Connected to BOT Network with live x402 payments'
               : backendMode === 'offline'
                 ? 'Backend is offline — start with: cd backend && npm run dev'
                 : 'Checking backend connection...'}
@@ -252,27 +254,30 @@ export default function Navbar() {
         </div>
 
         {/* ── Language switcher ── */}
-        <div style={{ display: 'flex', gap: 3, borderRight: '1px solid #e5e7eb', paddingRight: 12 }}>
-          {(['en', 'hi', 'es'] as const).map((lang) => (
-            <button
-              key={lang}
-              onClick={() => setLanguage(lang)}
-              style={{
-                padding: '4px 7px', fontSize: '0.62rem', fontWeight: language === lang ? 700 : 400,
-                background: language === lang ? '#f0f2f5' : 'transparent',
-                color: language === lang ? '#111827' : '#9ca3af',
-                border: '1px solid', borderColor: language === lang ? '#e5e7eb' : 'transparent',
-                borderRadius: 4, cursor: 'pointer', fontFamily: 'var(--font-mono)',
-                transition: 'all 0.15s ease',
-              }}
-            >
-              {lang === 'en' ? 'EN' : lang === 'hi' ? 'हिन्दी' : 'ES'}
-            </button>
-          ))}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <ThemeToggle />
+          <div style={{ display: 'flex', gap: 3, borderRight: '1px solid var(--border-strong)', paddingRight: 12 }}>
+            {(['en', 'hi', 'es'] as const).map((lang) => (
+              <button
+                key={lang}
+                onClick={() => setLanguage(lang)}
+                style={{
+                  padding: '4px 7px', fontSize: '0.62rem', fontWeight: language === lang ? 700 : 400,
+                  background: language === lang ? 'var(--surface-muted)' : 'transparent',
+                  color: language === lang ? 'var(--text-primary)' : 'var(--text-tertiary)',
+                  border: '1px solid', borderColor: language === lang ? 'var(--border-strong)' : 'transparent',
+                  borderRadius: 4, cursor: 'pointer', fontFamily: 'var(--font-mono)',
+                  transition: 'all 0.15s ease',
+                }}
+              >
+                {lang === 'en' ? 'EN' : lang === 'hi' ? 'हिन्दी' : 'ES'}
+              </button>
+            ))}
+          </div>
         </div>
 
         <WalletInfo />
-        <div style={{ width: 1, height: 22, background: '#e5e7eb' }} />
+        <div style={{ width: 1, height: 22, background: 'var(--border-strong)' }} />
         <ConnectWalletButton />
       </nav>
 
@@ -316,9 +321,9 @@ export default function Navbar() {
             top: '100%',
             left: 0,
             right: 0,
-            backgroundColor: 'rgba(255, 255, 255, 0.98)',
-            backdropFilter: 'blur(12px)',
-            border: '1px solid #e5e7eb',
+            backgroundColor: 'var(--surface)',
+            backdropFilter: 'blur(24px)',
+            border: '1px solid var(--border-strong)',
             borderTop: 'none',
             padding: 20,
             display: 'none',
@@ -352,12 +357,12 @@ export default function Navbar() {
               style={{
                 fontSize: '0.9rem',
                 fontWeight: 600,
-                color: isActive(item.path) ? '#111827' : '#6b7280',
+                color: isActive(item.path) ? 'var(--text-primary)' : 'var(--text-secondary)',
                 textDecoration: 'none',
                 padding: '12px 16px',
                 borderRadius: 8,
-                backgroundColor: isActive(item.path) ? '#f0f2f5' : 'transparent',
-                border: isActive(item.path) ? '1px solid #e5e7eb' : '1px solid transparent',
+                backgroundColor: isActive(item.path) ? 'var(--surface-muted)' : 'transparent',
+                border: isActive(item.path) ? '1px solid var(--border-strong)' : '1px solid transparent',
                 transition: 'all 0.2s ease',
               }}
             >

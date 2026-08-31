@@ -1,42 +1,42 @@
 'use client';
 
 /**
- * EVM wallet session for GOAT Network (injected provider, e.g. MetaMask).
+ * EVM wallet session for BOT Chain (injected provider, e.g. MetaMask).
  *
- * Replaces the previous @stacks/connect flow. Uses the EIP-1193 provider
+ * Replaces the previous connection flow. Uses the EIP-1193 provider
  * exposed at window.ethereum and viem for chain helpers. No React context
  * provider is required for the injected flow.
  *
- * GOAT chain params (docs.goat.network/docs/build/networks-rpc):
- *   testnet3: chainId 48816, rpc https://rpc.testnet3.goat.network
- *   mainnet:  chainId 2345,  rpc https://rpc.goat.network
+ * BOT Chain params (dev-docs.botchain.ai):
+ *   testnet: chainId 968, rpc https://rpc.bohr.life
+ *   mainnet: chainId 677, rpc https://rpc.botchain.ai
  */
 import { defineChain } from 'viem';
 
-const NETWORK = (process.env.NEXT_PUBLIC_GOAT_NETWORK || 'testnet') as 'testnet' | 'mainnet';
+const NETWORK = (process.env.NEXT_PUBLIC_BOT_NETWORK || 'testnet') as 'testnet' | 'mainnet';
 
-export const goatTestnet = defineChain({
-  id: 48816,
-  name: 'GOAT Testnet3',
-  nativeCurrency: { name: 'Bitcoin', symbol: 'BTC', decimals: 18 },
-  rpcUrls: { default: { http: ['https://rpc.testnet3.goat.network'] } },
+export const botTestnet = defineChain({
+  id: 968,
+  name: 'BOT Chain Testnet',
+  nativeCurrency: { name: 'BOT', symbol: 'tBOT', decimals: 18 },
+  rpcUrls: { default: { http: ['https://rpc.bohr.life'] } },
   blockExplorers: {
-    default: { name: 'Blockscout', url: 'https://explorer.testnet3.goat.network' },
+    default: { name: 'BOTScan', url: 'https://scan.botchain.ai' },
   },
   testnet: true,
 });
 
-export const goatMainnet = defineChain({
-  id: 2345,
-  name: 'GOAT Network',
-  nativeCurrency: { name: 'Bitcoin', symbol: 'BTC', decimals: 18 },
-  rpcUrls: { default: { http: ['https://rpc.goat.network'] } },
+export const botMainnet = defineChain({
+  id: 677,
+  name: 'BOT Chain',
+  nativeCurrency: { name: 'BOT', symbol: 'BOT', decimals: 18 },
+  rpcUrls: { default: { http: ['https://rpc.botchain.ai'] } },
   blockExplorers: {
-    default: { name: 'Blockscout', url: 'https://explorer.goat.network' },
+    default: { name: 'BOTScan', url: 'https://scan.botchain.ai' },
   },
 });
 
-export const activeChain = NETWORK === 'mainnet' ? goatMainnet : goatTestnet;
+export const activeChain = NETWORK === 'mainnet' ? botMainnet : botTestnet;
 
 type Eip1193Provider = {
   request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
@@ -55,8 +55,8 @@ export function isWalletAvailable(): boolean {
 
 const toHexChainId = (id: number) => `0x${id.toString(16)}`;
 
-/** Ensure the wallet is on the active GOAT chain; add it if unknown. */
-async function ensureGoatChain(provider: Eip1193Provider): Promise<void> {
+/** Ensure the wallet is on the active BOT chain; add it if unknown. */
+async function ensureBotChain(provider: Eip1193Provider): Promise<void> {
   const hexId = toHexChainId(activeChain.id);
   try {
     await provider.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: hexId }] });
@@ -79,7 +79,7 @@ async function ensureGoatChain(provider: Eip1193Provider): Promise<void> {
   }
 }
 
-/** Prompt connection, switch to GOAT, return the connected address. */
+/** Prompt connection, switch to BOT, return the connected address. */
 export async function authenticate(): Promise<string | null> {
   const provider = getProvider();
   if (!provider) {
@@ -88,7 +88,7 @@ export async function authenticate(): Promise<string | null> {
   }
   const accounts = (await provider.request({ method: 'eth_requestAccounts' })) as string[];
   if (!accounts?.length) return null;
-  await ensureGoatChain(provider);
+  await ensureBotChain(provider);
   return accounts[0];
 }
 

@@ -15,8 +15,8 @@ export default function Footer() {
 
   const resourceLinks = [
     { name: 'Documentation', path: '/docs' },
-    { name: 'GOAT Docs', path: 'https://docs.goat.network' },
-    { name: 'x402 Protocol', path: 'https://x402.goat.network' },
+    { name: 'BOT Docs', path: 'https://dev-docs.botchain.ai' },
+    { name: 'x402 Protocol', path: 'https://x402.org' },
     { name: 'Tutorials', path: '#' },
   ];
 
@@ -71,7 +71,7 @@ export default function Footer() {
             fontFamily: 'var(--font-mono)',
             fontWeight: 500,
           }}>
-            The autonomous layer for the agent economy. Secure, trustless A2A micropayments on GOAT Network.
+            The autonomous layer for the agent economy. Secure, trustless A2A micropayments on BOT Network.
           </p>
           <div style={{ display: 'flex', gap: 12 }}>
             {[
@@ -128,7 +128,7 @@ export default function Footer() {
             </div>
             <div className="stat-card">
               <span className="label mono">CHAIN</span>
-              <span className="value mono">GOAT Network</span>
+              <span className="value mono">BOT Chain</span>
             </div>
             <div className="stat-card live">
               <span className="label mono">SYSTEM</span>

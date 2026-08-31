@@ -15,7 +15,7 @@ import { privateKeyToAccount } from 'viem/accounts';
 dotenv.config({ path: '../.env' });
 dotenv.config(); // also load local .env
 
-// Payment settles server-side via the GOAT x402 order flow; the client just
+// Payment settles server-side via the BOT x402 order flow; the client just
 // passes its payer address. Defensive parser for any payment-response header.
 function decodePaymentResponse(raw: string): { transaction: string; payer?: string; network?: string } | null {
   if (!raw) return null;
@@ -42,7 +42,7 @@ if (!PRIVATE_KEY) {
   process.exit(1);
 }
 
-// Plain HTTP client; payment is settled server-side via GOAT x402 orders.
+// Plain HTTP client; payment is settled server-side via BOT x402 orders.
 const account = privateKeyToAccount(
   (PRIVATE_KEY.startsWith('0x') ? PRIVATE_KEY : `0x${PRIVATE_KEY}`) as `0x${string}`
 );
@@ -104,7 +104,7 @@ async function testSummarize() {
   console.log('[3/4] Testing POST /api/summarize (0.003 USDC)...');
   try {
     const res = await api.post('/api/summarize', {
-      text: 'The x402 protocol enables automatic HTTP-level payments for APIs, AI agents, and digital services using USDC on GOAT Network. It works by returning a 402 Payment Required status when a client requests a protected resource. The client then signs a transaction and sends it via a facilitator, which broadcasts it to the blockchain. Once confirmed, the server grants access to the resource. This enables machine-to-machine micropayments without subscriptions or API keys.',
+      text: 'The x402 protocol enables automatic HTTP-level payments for APIs, AI agents, and digital services using USDC on BOT Network. It works by returning a 402 Payment Required status when a client requests a protected resource. The client then signs a transaction and sends it via a facilitator, which broadcasts it to the blockchain. Once confirmed, the server grants access to the resource. This enables machine-to-machine micropayments without subscriptions or API keys.',
       maxLength: 100,
     });
     console.log('  Status:', res.status);

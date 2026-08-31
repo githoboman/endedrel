@@ -8,7 +8,7 @@
  *   2. Accepts a user query (CLI or programmatic)
  *   3. Plans optimal delegation using LLM (Groq / Gemini)
  *   4. Autonomously evaluates cost vs. reputation before hiring
- *   5. Pays each Worker Agent via x402 (USDC) on GOAT Network
+ *   5. Pays each Worker Agent via x402 (USDC) on BOT Network
  *   6. Handles recursive A2A hiring chains
  *   7. Aggregates results into a final answer
  *
@@ -41,7 +41,7 @@ if (!PRIVATE_KEY) {
 }
 
 // EVM account derived from the private key (viem). Payment settlement now
-// happens server-side via the GOAT x402 order flow, so the agent uses a plain
+// happens server-side via the BOT x402 order flow, so the agent uses a plain
 // axios client and passes its address so the backend can attribute the payer.
 const account = privateKeyToAccount(
   (PRIVATE_KEY.startsWith('0x') ? PRIVATE_KEY : `0x${PRIVATE_KEY}`) as `0x${string}`
@@ -51,7 +51,7 @@ const api: AxiosInstance = axios.create({
   headers: { 'x-payer-address': account.address },
 });
 
-// ── x402 helper shims (GOAT equivalents of former x402-stacks utilities) ──
+// ── x402 helper shims (BOT equivalents of former x402-stacks utilities) ──
 function decodePaymentResponse(raw: string): { transaction: string } | null {
   if (!raw) return null;
   try {
@@ -64,9 +64,7 @@ function decodePaymentResponse(raw: string): { transaction: string } | null {
 }
 
 function getExplorerURL(txId: string, _network?: string): string {
-  const base = NETWORK === 'mainnet'
-    ? 'https://explorer.goat.network'
-    : 'https://explorer.testnet3.goat.network';
+  const base = 'https://scan.botchain.ai';
   return txId ? `${base}/tx/${txId}` : base;
 }
 
@@ -221,10 +219,10 @@ async function planToolCalls(query: string, tools: Tool[]): Promise<AgentPlan> {
     `- ID: "${t.id}" | Name: "${t.name}" | Cost: ${t.price.STX} USDC | Rep: ${t.reputation}/100 | Cat: ${t.category} | ${t.canHireSubAgents ? 'CAN HIRE SUB-AGENTS' : 'Worker'}\n  Description: ${t.description}\n  Params: ${JSON.stringify(t.params)}`
   ).join('\n\n');
 
-  const systemPrompt = `You are the MANAGER AGENT of Endedrel — an autonomous AI economy on Stacks blockchain.
+  const systemPrompt = `You are the MANAGER AGENT of Endedrel — an autonomous AI economy on BOT Chain.
 
 You have a BUDGET and must hire Worker Agents via x402 micropayments.
-Each hire costs real STX tokens on the Stacks blockchain.
+Each hire costs real USDC tokens on the BOT Chain network.
 
 Available Worker Agents:
 ${toolsDescription}
@@ -574,7 +572,7 @@ async function startRepl() {
   console.log('');
   console.log('╔══════════════════════════════════════════════════════════════╗');
   console.log('║              Endedrel — x402 AUTONOMOUS AGENT                ║');
-  console.log('║           Agent-to-Agent Economy on Stacks                  ║');
+  console.log('║           Agent-to-Agent Economy on BOT Chain               ║');
   console.log('╠══════════════════════════════════════════════════════════════╣');
   console.log(`║  Server  : ${SERVER_URL.padEnd(49)}║`);
   console.log(`║  Wallet  : ${account.address.padEnd(49)}║`);
@@ -647,7 +645,7 @@ async function startRepl() {
 
       if (trimmed === 'demo') {
         console.log('[AGENT] [DEMO] Running multi-agent demo...');
-        await processQuery('Research the x402 protocol on Stacks, summarize the findings, and check the weather in Tokyo');
+        await processQuery('Research the x402 protocol on BOT Chain, summarize the findings, and check the weather in Tokyo');
         prompt();
         return;
       }

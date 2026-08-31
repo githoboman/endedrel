@@ -202,7 +202,7 @@ const HiringDecisionMessage = ({
                   </div>
                   <div style={{ display: 'flex', gap: 8 }}>
                     <span style={{ color: 'var(--accent-500)', fontFamily: 'var(--font-mono)', fontSize: '0.7rem', minWidth: 60 }}>Settlement</span>
-                    <span style={{ fontSize: '0.78rem' }}>Payment sent via x402 on GOAT Network. Check Protocol Trace for the full order lifecycle.</span>
+                    <span style={{ fontSize: '0.78rem' }}>Payment sent via x402 on BOT Network. Check Protocol Trace for the full order lifecycle.</span>
                   </div>
                 </div>
               </div>

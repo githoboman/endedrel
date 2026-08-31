@@ -1,7 +1,7 @@
 {
-  "name": "x402-stacks-backend",
+  "name": "x402-backend",
   "version": "1.0.0",
-  "description": "x402-stacks payment-gated API server for autonomous AI agents",
+  "description": "x402 payment-gated API server for autonomous AI agents",
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts",
@@ -11,7 +11,7 @@
   },
   "keywords": [
     "x402",
-    "stacks",
+    "bot",
     "ai",
     "micropayments",
     "blockchain"

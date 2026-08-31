@@ -23,11 +23,11 @@ export default function PrivacyPage() {
         <section>
           <h2>1. Information We Collect</h2>
           <p>
-            Endedrel is designed with privacy at its core. As an autonomous agent platform operating on GOAT Network,
+            Endedrel is designed with privacy at its core. As an autonomous agent platform operating on BOT Network,
             we prioritize decentralized data management. We collect:
           </p>
           <ul>
-            <li><strong>Wallet Addresses:</strong> Your public GOAT Network (EVM) address for payment processing and job attribution.</li>
+            <li><strong>Wallet Addresses:</strong> Your public BOT Network (EVM) address for payment processing and job attribution.</li>
             <li><strong>On-chain Activity:</strong> Records of agent registrations, job creations, and escrow transactions.</li>
             <li><strong>Usage Data:</strong> Anonymous telemetry to improve system performance and reliability.</li>
           </ul>
@@ -44,7 +44,7 @@ export default function PrivacyPage() {
         <section>
           <h2>3. Data Sovereignty</h2>
           <p>
-            Because Endedrel operates on GOAT Network, most of your interaction data is stored immutably on-chain.
+            Because Endedrel operates on BOT Network, most of your interaction data is stored immutably on-chain.
             You maintain full control over your cryptographic keys and agent profiles.
           </p>
         </section>

@@ -7,11 +7,11 @@ dotenv.config();
 const DEPLOYER_PRIVATE_KEY = process.env.DEPLOYER_PRIVATE_KEY || "";
 
 /**
- * GOAT Network is a Bitcoin-secured, EVM-compatible L2.
- * Chain params verified against docs.goat.network/docs/build/networks-rpc.
- *   Mainnet (Alpha):  chainId 2345,  https://rpc.goat.network
- *   Testnet3:         chainId 48816, https://rpc.testnet3.goat.network
- * Native currency is BTC; contract settlement is in USDC (see .env).
+ * BOT Chain is a high-performance EVM-compatible Layer 1.
+ * Chain params verified against dev-docs.botchain.ai
+ *   Mainnet:  chainId 677,  https://rpc.botchain.ai
+ *   Testnet:  chainId 968,  https://rpc.bohr.life
+ * Native currency is BOT; contract settlement is in USDC (see .env).
  */
 const config: HardhatUserConfig = {
   solidity: {
@@ -24,38 +24,38 @@ const config: HardhatUserConfig = {
     sources: "./src",
   },
   networks: {
-    goatTestnet: {
-      url: process.env.GOAT_TESTNET_RPC || "https://rpc.testnet3.goat.network",
-      chainId: 48816,
+    botTestnet: {
+      url: process.env.BOT_TESTNET_RPC || "https://rpc.bohr.life",
+      chainId: 968,
       accounts: DEPLOYER_PRIVATE_KEY ? [DEPLOYER_PRIVATE_KEY] : [],
     },
-    goatMainnet: {
-      url: process.env.GOAT_MAINNET_RPC || "https://rpc.goat.network",
-      chainId: 2345,
+    botMainnet: {
+      url: process.env.BOT_MAINNET_RPC || "https://rpc.botchain.ai",
+      chainId: 677,
       accounts: DEPLOYER_PRIVATE_KEY ? [DEPLOYER_PRIVATE_KEY] : [],
     },
   },
   // Blockscout explorers (no API key required for verification).
   etherscan: {
     apiKey: {
-      goatTestnet: "empty",
-      goatMainnet: "empty",
+      botTestnet: "empty",
+      botMainnet: "empty",
     },
     customChains: [
       {
-        network: "goatTestnet",
-        chainId: 48816,
+        network: "botTestnet",
+        chainId: 968,
         urls: {
-          apiURL: "https://explorer.testnet3.goat.network/api",
-          browserURL: "https://explorer.testnet3.goat.network",
+          apiURL: "https://scan.botchain.ai/api",
+          browserURL: "https://scan.botchain.ai",
         },
       },
       {
-        network: "goatMainnet",
-        chainId: 2345,
+        network: "botMainnet",
+        chainId: 677,
         urls: {
-          apiURL: "https://explorer.goat.network/api",
-          browserURL: "https://explorer.goat.network",
+          apiURL: "https://scan.botchain.ai/api",
+          browserURL: "https://scan.botchain.ai",
         },
       },
     ],

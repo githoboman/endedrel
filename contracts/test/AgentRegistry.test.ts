@@ -3,11 +3,11 @@ import { ethers } from "hardhat";
 
 /**
  * Exercises the full job lifecycle end-to-end on a local EVM node, using a
- * MockUSDC in place of GOAT USDC. Confirms AgentRegistry.sol deploys and its
- * escrow/reputation logic behaves as ported from the Clarity original.
+ * MockUSDC in place of BOT Chain USDC. Confirms AgentRegistry.sol deploys and its
+ * escrow/reputation logic behaves correctly.
  */
 describe("AgentRegistry", () => {
-  const ESCROW_TIMEOUT = 25600; // ~24h @ GOAT 3.374s/block
+  const ESCROW_TIMEOUT = 25600; // ~24h @ BOT Chain 3.374s/block
   const PRICE = 1_000_000n;     // 1 USDC (6 decimals)
 
   async function deploy() {

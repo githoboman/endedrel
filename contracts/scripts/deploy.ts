@@ -1,14 +1,14 @@
 import { ethers, network } from "hardhat";
 
 /**
- * Deploys AgentRegistry to a GOAT network.
+ * Deploys AgentRegistry to BOT Chain.
  *
  * Required env:
  *   USDC_ADDRESS         — ERC-20 settlement token (USDC) on the target network.
- *                          GOAT has not published this publicly at time of writing;
- *                          set it before deploying. Deployment aborts if unset.
+ *                          Get the BOT Chain USDC address from dev-docs.botchain.ai
+ *                          and set it in .env before deploying.
  *   ESCROW_TIMEOUT_BLOCKS — blocks before a requester can reclaim escrow.
- *                          Tune to GOAT block time for ~24h (Stacks used 144).
+ *                          Tune to BOT Chain block time for ~24h (~25600 blocks @ 3.374s/block).
  */
 async function main() {
   const usdc = process.env.USDC_ADDRESS;
@@ -17,11 +17,11 @@ async function main() {
   if (!usdc || !/^0x[0-9a-fA-F]{40}$/.test(usdc)) {
     throw new Error(
       "USDC_ADDRESS is unset or not a valid address. " +
-        "Set the GOAT USDC (or chosen settlement token) address in .env before deploying."
+        "Set the BOT Chain USDC contract address in .env before deploying."
     );
   }
   if (!timeout) {
-    throw new Error("ESCROW_TIMEOUT_BLOCKS is unset. Set it in .env (e.g. blocks ≈ 24h on GOAT).");
+    throw new Error("ESCROW_TIMEOUT_BLOCKS is unset. Set it in .env (e.g. 25600 blocks ≈ 24h on BOT Chain).");
   }
 
   const [deployer] = await ethers.getSigners();

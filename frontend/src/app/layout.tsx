@@ -12,8 +12,8 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Endedrel — x402 Agent Economy | GOAT Network',
-  description: 'Autonomous Agent-to-Agent micropayment marketplace on GOAT Network via x402 protocol',
+  title: 'Endedrel — x402 Agent Economy | BOT Network',
+  description: 'Autonomous Agent-to-Agent micropayment marketplace on BOT Network via x402 protocol',
   icons: {
     icon: '/logo.png',
   },
@@ -24,10 +24,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} ${jetbrainsMono.variable}`}>
         <Providers>
-          <main style={{ minHeight: '100vh', padding: '0 32px 40px', maxWidth: 1440, margin: '0 auto' }}>
+          <main style={{ minHeight: '100vh', padding: '0 32px 40px', maxWidth: 1800, margin: '0 auto' }}>
             <Navbar />
             {children}
             <Footer />

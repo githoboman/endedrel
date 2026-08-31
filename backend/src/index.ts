@@ -4,7 +4,7 @@
  * ═══════════════════════════════════════════════════════════════════════════
  *
  * A production-grade backend that implements:
- *   - x402 payment-gated endpoints (USDC on GOAT)
+ *   - x402 payment-gated endpoints (USDC on BOT)
  *   - Agent-to-Agent (A2A) recursive hiring
  *   - On-chain agent registry integration
  *   - Real-time SSE for live dashboard updates
@@ -39,10 +39,10 @@ import dotenv from 'dotenv';
 import {
   createOrder,
   waitForConfirmation,
-  goatCredentialsPresent,
-  goatExplorerUrl,
-  goatConfig,
-} from './goat-x402.js';
+  botCredentialsPresent,
+  botExplorerUrl,
+  botConfig,
+} from './bot-x402.js';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import Groq from 'groq-sdk';
 import axios from 'axios';
@@ -56,38 +56,36 @@ dotenv.config();
 
 const PORT = parseInt(process.env.PORT || '4002', 10);
 const HOST = process.env.HOST || '0.0.0.0';
-const NETWORK = (process.env.GOAT_NETWORK as 'testnet' | 'mainnet') || 'testnet';
-// EVM address that receives payments on GOAT (0x...).
+const NETWORK = (process.env.BOT_NETWORK as 'testnet' | 'mainnet') || 'testnet';
+// EVM address that receives payments on BOT (0x...).
 const SERVER_ADDRESS = process.env.SERVER_ADDRESS || '0x0000000000000000000000000000000000000000';
-const EXPLORER_BASE = goatConfig.NETWORK === 'mainnet'
-  ? 'https://explorer.goat.network'
-  : 'https://explorer.testnet3.goat.network';
+const EXPLORER_BASE = 'https://scan.botchain.ai';
 const AGENT_ADDRESS = process.env.AGENT_ADDRESS || SERVER_ADDRESS;
 
-if (!goatCredentialsPresent()) {
-  console.warn('[WARN] GOAT x402 merchant credentials not set. Payments run in SIMULATION mode.');
+if (!botCredentialsPresent()) {
+  console.warn('[WARN] BOT x402 merchant credentials not set. Payments run in SIMULATION mode.');
 }
 
 // Internal axios client the manager uses to call worker endpoints on this
-// same server. Payment is settled out-of-band via the GOAT order flow in
+// same server. Payment is settled out-of-band via the BOT order flow in
 // createPaidRoute, so this is a plain client (no payment-wrapping interceptor).
 const agentClient = axios.create({ baseURL: `http://127.0.0.1:${PORT}` });
 
-// ── x402 helper shims (GOAT equivalents of former x402-stacks utilities) ──
+// ── x402 helper shims (BOT equivalents of former x402 utilities) ──
 
-/** Read the settled GOAT order attached to a gated request, if any. */
+/** Read the settled BOT order attached to a gated request, if any. */
 function getPayment(req: Request): { transaction?: string; payer?: string } | null {
-  const order = (req as any).goatOrder as { order_id?: string; from_address?: string } | undefined;
+  const order = (req as any).BOTOrder as { order_id?: string; from_address?: string } | undefined;
   if (!order) return null;
   return { transaction: order.order_id, payer: order.from_address };
 }
 
-/** Explorer URL for a GOAT tx/order (NETWORK arg kept for call-site compatibility). */
+/** Explorer URL for a BOT tx/order (NETWORK arg kept for call-site compatibility). */
 function getExplorerURL(txId: string, _network?: string): string {
-  return goatExplorerUrl(txId);
+  return botExplorerUrl(txId);
 }
 
-/** Parse a GOAT settlement-proof / payment-response payload defensively. */
+/** Parse a BOT settlement-proof / payment-response payload defensively. */
 function decodePaymentResponse(raw: string): { transaction: string } | null {
   if (!raw) return null;
   try {
@@ -199,7 +197,7 @@ function getDiscountedPrice(basePrice: number, reputation: number): number {
 const paymentLogs: PaymentLog[] = [];
 let paymentIdCounter = 0;
 
-// Internal L2 on-chain agent registry (synchronized with Stacks state)
+// Internal L2 on-chain agent registry (synchronized with BOT Chain state)
 const agentRegistry: AgentRegistryEntry[] = [
   // ── Universal Agent Adapter (External Agents) ──
   ...EXTERNAL_AGENTS.map(ext => ({
@@ -459,7 +457,7 @@ function logPayment(
 // Token Resolution + Payment Middleware Factory
 // ═══════════════════════════════════════════════════════════════════════════
 
-// GOAT settles in a single token (USDC). Kept as a function so the 8 route
+// BOT settles in a single token (USDC). Kept as a function so the 8 route
 // handlers that call resolveToken(req) need no changes.
 type TokenType = 'USDC';
 
@@ -469,17 +467,17 @@ function resolveToken(_req: Request): TokenType {
 
 function createPaidRoute(config: PriceConfig) {
   return async (req: Request, res: Response, next: NextFunction) => {
-    // Simulate when explicitly asked OR when GOAT merchant credentials are
+    // Simulate when explicitly asked OR when BOT merchant credentials are
     // absent (can't settle without them). Keeps the demo runnable end-to-end.
-    if (process.env.SIMULATION_MODE === 'true' || !goatCredentialsPresent()) {
+    if (process.env.SIMULATION_MODE === 'true' || !botCredentialsPresent()) {
       if (process.env.SIMULATION_MODE !== 'true') {
-        console.warn(`[PAYMENT] [SIMULATION] No GOAT credentials — bypassing payment for ${req.path}`);
+        console.warn(`[PAYMENT] [SIMULATION] No BOT credentials — bypassing payment for ${req.path}`);
       }
       next();
       return;
     }
 
-    // Real settlement via the GOAT x402 merchant gateway: create an order
+    // Real settlement via the BOT x402 merchant gateway: create an order
     // for the USDC price and gate access on it reaching PAYMENT_CONFIRMED.
     try {
       const payer = (req.headers['x-payer-address'] as string) || AGENT_ADDRESS;
@@ -499,13 +497,13 @@ function createPaidRoute(config: PriceConfig) {
       // A 402 (payment required) is expected on create, but we still need an
       // order id to poll. If the gateway didn't return one, surface it.
       if (!order?.order_id) {
-        res.status(502).json({ error: 'GOAT gateway returned no order_id', response: order });
+        res.status(502).json({ error: 'BOT gateway returned no order_id', response: order });
         return;
       }
 
       const settled = await waitForConfirmation(order.order_id, { timeoutMs: 20000 });
       if (settled.state === 'PAYMENT_CONFIRMED' || settled.state === 'INVOICED') {
-        (req as any).goatOrder = settled;
+        (req as any).BOTOrder = settled;
         next();
         return;
       }
@@ -602,16 +600,16 @@ function sendSSETo(clientId: string, event: string, data: any) {
 // ═══════════════════════════════════════════════════════════════════════════
 
 app.get('/health', (_req: Request, res: Response) => {
-  const hasCredentials = goatCredentialsPresent();
+  const hasCredentials = botCredentialsPresent();
   res.json({
     status: 'ok',
     uptime: process.uptime(),
     network: NETWORK,
-    facilitator: goatConfig.BASE_URL,
+    facilitator: botConfig.BASE_URL,
     version: '2.0.0',
     agents: agentRegistry.length,
     totalPayments: paymentLogs.length,
-    goatCredentials: hasCredentials,
+    BOTCredentials: hasCredentials,
     mode: hasCredentials ? 'live' : 'simulation',
   });
 });
@@ -620,9 +618,9 @@ app.get('/', (_req: Request, res: Response) => {
   res.json({
     name: 'Endedrel — x402 Autonomous Agent Economy',
     version: '2.0.0',
-    description: 'Agent-to-Agent micropayment marketplace on GOAT Network via x402',
+    description: 'Agent-to-Agent micropayment marketplace on BOT Network via x402',
     network: NETWORK,
-    facilitator: goatConfig.BASE_URL,
+    facilitator: botConfig.BASE_URL,
     protocol: 'x402 (HTTP 402 Payment Required)',
     tokenSupport: ['USDC'],
     features: [
@@ -734,7 +732,7 @@ app.get('/api/registry', (req: Request, res: Response) => {
       agents.sort((a, b) => b.efficiency - a.efficiency);
   }
 
-  // Expose priceUSDC alias (settlement is USDC on GOAT); priceSTX kept for
+  // Expose priceUSDC alias (settlement is USDC on BOT); priceSTX kept for
   // back-compat with internal fields — same numeric value.
   const agentsOut = agents.map(a => ({ ...a, priceUSDC: a.priceSTX }));
 
@@ -1164,7 +1162,7 @@ app.post('/api/agent/research', createPaidRoute(PRICES.research), async (req: Re
       agent: 'KaggleIngest PRO',
       task: 'Ingest premium ecosystem data',
       cost: '0.02 USDC',
-      result: 'GOAT Network metrics: 1.2M transactions, 45 active nodes, 98.4% uptime. TOON v2 schema detected.',
+      result: 'BOT Network metrics: 1.2M transactions, 45 active nodes, 98.4% uptime. TOON v2 schema detected.',
       payment: kagglePayment,
     });
   }
@@ -1186,7 +1184,7 @@ app.post('/api/agent/research', createPaidRoute(PRICES.research), async (req: Re
         summary: completion.choices[0]?.message?.content || 'Research complete.',
         sources: [
           { title: `Research: ${query}`, url: `https://en.wikipedia.org/wiki/${encodeURIComponent(query)}` },
-          { title: 'Stacks Documentation', url: 'https://docs.stacks.co' },
+          { title: 'BOT Chain Documentation', url: 'https://dev-docs.botchain.ai' },
         ],
       };
     } else {
@@ -1535,7 +1533,7 @@ async function runManagerAgent(
     return `- "${agent.id}": ${agent.category} Agent | Cost: ${agent.priceSTX} STX | Reputation: ${agent.reputation}/100`;
   }).join('\n');
 
-  const plannerPrompt = `You are the MANAGER AGENT of an autonomous AI economy on Stacks blockchain.
+  const plannerPrompt = `You are the MANAGER AGENT of an autonomous AI economy on BOT Chain.
 You have a budget and must hire the BEST specialized Worker Agents to complete the user's task.
 
 Available Worker Agents (x402 paid APIs):
@@ -2107,7 +2105,7 @@ async function simulateToolResult(toolId: string, params: any, query: string): P
     case 'research':
       return {
         summary: `Comprehensive analysis of "${params.query || query}". Key findings: Strong adoption trends, growing ecosystem, regulatory clarity improving.`,
-        sources: [{ title: 'Primary Source', url: 'https://docs.stacks.co' }],
+        sources: [{ title: 'Primary Source', url: 'https://dev-docs.botchain.ai' }],
         key_findings: ['High feasibility', 'Growing demand', 'Active development'],
       };
     case 'coding':
@@ -2422,13 +2420,13 @@ app.listen(PORT, HOST, () => {
   console.log('');
   console.log('╔══════════════════════════════════════════════════════════════╗');
   console.log('║  Endedrel — x402 Autonomous Agent Economy                   ║');
-  console.log('║  Agent-to-Agent Micropayment Marketplace on GOAT Network   ║');
+  console.log('║  Agent-to-Agent Micropayment Marketplace on BOT Network   ║');
   console.log('╠══════════════════════════════════════════════════════════════╣');
   console.log(`║  Server      : http://${HOST}:${PORT}`);
-  console.log(`║  Network     : ${NETWORK} (GOAT)`);
-  console.log(`║  Facilitator : ${goatConfig.BASE_URL}`);
+  console.log(`║  Network     : ${NETWORK} (BOT)`);
+  console.log(`║  Facilitator : ${botConfig.BASE_URL}`);
   console.log(`║  Agents      : ${agentRegistry.length} registered`);
-  console.log(`║  Payments    : ${goatCredentialsPresent() ? 'GOAT x402 (live)' : 'Simulation Mode'}`);
+  console.log(`║  Payments    : ${botCredentialsPresent() ? 'BOT x402 (live)' : 'Simulation Mode'}`);
   console.log('╠══════════════════════════════════════════════════════════════╣');
   console.log('║  Paid Endpoints (Worker Agents):');
   Object.entries(PRICES).forEach(([id, p]) => {

@@ -1,53 +1,44 @@
 /**
  * ═══════════════════════════════════════════════════════════════════════════
- *  GOAT Network x402 Merchant Client
+ *  BOT Chain x402 Merchant Client
  * ═══════════════════════════════════════════════════════════════════════════
- *  Talks to GOAT's hosted x402 merchant gateway (the "Machine Payments
- *  Protocol"). This REPLACES the self-hosted x402-stacks paymentMiddleware:
- *  GOAT does not use route-gating middleware — the server creates an order
+ *  Talks to the x402 merchant gateway for BOT Chain payment settlement.
+ *  BOT Chain does not use route-gating middleware — the server creates an order
  *  via the gateway and gates access on the order reaching PAYMENT_CONFIRMED.
  *
- *  API (docs.goat.network/docs/build/x402/api-reference):
- *    Base URL testnet : https://x402-api-lx58aabp0r.testnet3.goat.network
- *    Base URL mainnet : https://x402-api.goat.network
- *    POST /api/v1/orders                       — create order
- *    GET  /api/v1/orders/{order_id}            — query status
- *    GET  /api/v1/orders/{order_id}/proof      — settlement proof
- *    POST /api/v1/orders/{order_id}/cancel     — cancel
- *
  *  Auth: HMAC-SHA256 over sorted request fields + api_key/timestamp/nonce.
- *  Credentials (X-API-Key + secret) come from the GOAT merchant portal —
- *  set GOAT_X402_API_KEY / GOAT_X402_API_SECRET in .env. Without them the
+ *  Credentials (X-API-Key + secret) come from the BOT merchant portal —
+ *  set BOT_X402_API_KEY / BOT_X402_API_SECRET in .env. Without them the
  *  client cannot settle; callers should fall back to SIMULATION_MODE.
  * ═══════════════════════════════════════════════════════════════════════════
  */
 import * as crypto from 'node:crypto';
 import axios from 'axios';
 
-const NETWORK = (process.env.GOAT_NETWORK as 'testnet' | 'mainnet') || 'testnet';
+const NETWORK = (process.env.BOT_NETWORK as 'testnet' | 'mainnet') || 'testnet';
 
 const BASE_URL =
-  process.env.GOAT_X402_BASE_URL ||
+  process.env.BOT_X402_BASE_URL ||
   (NETWORK === 'mainnet'
-    ? 'https://x402-api.goat.network'
-    : 'https://x402-api-lx58aabp0r.testnet3.goat.network');
+    ? 'https://x402-api.botchain.ai'
+    : 'https://x402-api-testnet.botchain.ai');
 
-const CHAIN_ID = NETWORK === 'mainnet' ? 2345 : 48816;
+const CHAIN_ID = NETWORK === 'mainnet' ? 677 : 968;
 
-const API_KEY = process.env.GOAT_X402_API_KEY || '';
-const API_SECRET = process.env.GOAT_X402_API_SECRET || '';
-// Merchant ID from the GOAT merchant portal (per-environment). Optional field
+const API_KEY = process.env.BOT_X402_API_KEY || '';
+const API_SECRET = process.env.BOT_X402_API_SECRET || '';
+// Merchant ID from the BOT merchant portal (per-environment). Optional field
 // on the order body; included in the HMAC signature automatically when set.
-const MERCHANT_ID = process.env.GOAT_X402_MERCHANT_ID || '';
+const MERCHANT_ID = process.env.BOT_X402_MERCHANT_ID || '';
 
 // The docs specify HMAC-SHA256 but not the output encoding. Hex is the
 // convention for X-Sign headers, so it's the default. If the first real
-// request 401s on auth, set GOAT_X402_SIGN_ENCODING=base64 in .env — no code
+// request 401s on auth, set BOT_X402_SIGN_ENCODING=base64 in .env — no code
 // change needed.
 const SIGN_ENCODING: 'hex' | 'base64' =
-  process.env.GOAT_X402_SIGN_ENCODING === 'base64' ? 'base64' : 'hex';
+  process.env.BOT_X402_SIGN_ENCODING === 'base64' ? 'base64' : 'hex';
 
-export function goatCredentialsPresent(): boolean {
+export function botCredentialsPresent(): boolean {
   return API_KEY.length > 0 && API_SECRET.length > 0;
 }
 
@@ -115,7 +106,7 @@ export interface OrderResponse {
   [k: string]: unknown;
 }
 
-/** Create a payment order on the GOAT gateway. */
+/** Create a payment order on the BOT gateway. */
 export async function createOrder(params: CreateOrderParams): Promise<OrderResponse> {
   const body = {
     dapp_order_id: params.dappOrderId,
@@ -190,13 +181,10 @@ export async function waitForConfirmation(
   throw new Error(`Order ${orderId} status poll timed out`);
 }
 
-/** Explorer link for a settled tx on the active GOAT network. */
-export function goatExplorerUrl(txHash: string): string {
-  const base =
-    NETWORK === 'mainnet'
-      ? 'https://explorer.goat.network'
-      : 'https://explorer.testnet3.goat.network';
+/** Explorer link for a settled tx on the active BOT network. */
+export function botExplorerUrl(txHash: string): string {
+  const base = 'https://scan.botchain.ai';
   return txHash ? `${base}/tx/${txHash}` : base;
 }
 
-export const goatConfig = { BASE_URL, CHAIN_ID, NETWORK };
+export const botConfig = { BASE_URL, CHAIN_ID, NETWORK };
