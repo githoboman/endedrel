@@ -1,0 +1,23 @@
+{
+  "network": "botTestnet",
+  "chainId": 968,
+  "rpc": "https://rpc.bohr.life",
+  "explorer": "https://scan.botchain.ai",
+  "deployedAt": "2026-08-31",
+  "deployer": "0x30cB428375169B53B9FCB1f84E7178c692081f45",
+  "contracts": {
+    "AgentRegistry": {
+      "address": "0x5161ceF4b95EA0E95296FF3a6d7D6084072754f5",
+      "constructorArgs": {
+        "settlementToken": "0xF7bDE0378a68b278A515f1874D6101aB3ac3F8A0",
+        "escrowTimeoutBlocks": 25600
+      },
+      "explorer": "https://scan.botchain.ai/address/0x5161ceF4b95EA0E95296FF3a6d7D6084072754f5"
+    },
+    "MockUSDC": {
+      "address": "0xF7bDE0378a68b278A515f1874D6101aB3ac3F8A0",
+      "note": "Test settlement token (6 decimals). Testnet only — replace with real USDC on mainnet.",
+      "explorer": "https://scan.botchain.ai/address/0xF7bDE0378a68b278A515f1874D6101aB3ac3F8A0"
+    }
+  }
+}

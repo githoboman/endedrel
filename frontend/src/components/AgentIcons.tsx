@@ -58,8 +58,40 @@ export const AgentColors: Record<string, string> = {
   'legal-ai': '#7c3aed',
 };
 
+/**
+ * Cartoon robot avatar images — maps agent IDs to their generated
+ * cartoon robot icons in /agents/*.jpg
+ */
+export const AgentAvatarMap: Record<string, string> = {
+  manager: '/agents/manager.jpg',
+  weather: '/agents/weather.jpg',
+  summarize: '/agents/summarizer.jpg',
+  summarizer: '/agents/summarizer.jpg',
+  'math-solve': '/agents/math.jpg',
+  mathsolve: '/agents/math.jpg',
+  sentiment: '/agents/sentiment.jpg',
+  'code-explain': '/agents/code_explainer.jpg',
+  codeexplain: '/agents/code_explainer.jpg',
+  research: '/agents/research.jpg',
+  deepresearch: '/agents/research.jpg',
+  coding: '/agents/coding_agent.jpg',
+  'code-agent': '/agents/coding_agent.jpg',
+  autocoder: '/agents/coding_agent.jpg',
+  // Fallback: agents without a specific cartoon avatar use manager
+  'auditor-zero': '/agents/manager.jpg',
+  'market-oracle': '/agents/research.jpg',
+  'legal-ai': '/agents/manager.jpg',
+  kaggleingest: '/agents/research.jpg',
+  'kaggleingest-data': '/agents/research.jpg',
+  arbitrator: '/agents/manager.jpg',
+};
+
 export const getAgentIcon = (id: string): LucideIcon =>
   AgentIconMap[norm(id)] || AgentIconMap[id.toLowerCase()] || Zap;
 
 export const getAgentColor = (id: string): string =>
   AgentColors[norm(id)] || AgentColors[id.toLowerCase()] || '#78716c';
+
+/** Returns the cartoon robot avatar URL for an agent, or a default. */
+export const getAgentAvatar = (id: string): string =>
+  AgentAvatarMap[norm(id)] || AgentAvatarMap[id.toLowerCase()] || '/agents/manager.jpg';

@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Bot, Zap, Star, Activity, BarChart3, Filter } from 'lucide-react';
 import { useI18n } from '@/lib/LanguageContext';
+import { getAgentAvatar } from '@/components/AgentIcons';
 
 export default function AgentsPage() {
   const { t } = useI18n();
@@ -166,23 +167,37 @@ export default function AgentsPage() {
             }} />
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: 16, position: 'relative' }}>
-              <div>
-                <h3 className="mono" style={{ fontSize: '1.2rem', fontWeight: 700, color: '#ffffff', marginBottom: 4 }}>
-                  {agent.name}
-                </h3>
-                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                  <span className="badge" style={{
-                    backgroundColor: agent.isActive ? 'rgba(52, 211, 153, 0.1)' : 'rgba(161, 161, 170, 0.1)',
-                    color: agent.isActive ? '#34d399' : '#a1a1aa',
-                    fontSize: '0.65rem',
-                    padding: '2px 8px',
-                    borderColor: agent.isActive ? 'rgba(52, 211, 153, 0.3)' : 'rgba(161, 161, 170, 0.3)',
-                  }}>
-                    {agent.isActive ? t.online : t.offline}
-                  </span>
-                  <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-                    {agent.id.slice(0, 12)}...
-                  </span>
+              <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                <img
+                  src={getAgentAvatar(agent.id)}
+                  alt={agent.name}
+                  style={{
+                    width: 48,
+                    height: 48,
+                    borderRadius: '50%',
+                    objectFit: 'cover',
+                    border: '2px solid var(--border-subtle)',
+                    flexShrink: 0,
+                  }}
+                />
+                <div>
+                  <h3 className="mono" style={{ fontSize: '1.2rem', fontWeight: 700, color: '#ffffff', marginBottom: 4 }}>
+                    {agent.name}
+                  </h3>
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                    <span className="badge" style={{
+                      backgroundColor: agent.isActive ? 'rgba(52, 211, 153, 0.1)' : 'rgba(161, 161, 170, 0.1)',
+                      color: agent.isActive ? '#34d399' : '#a1a1aa',
+                      fontSize: '0.65rem',
+                      padding: '2px 8px',
+                      borderColor: agent.isActive ? 'rgba(52, 211, 153, 0.3)' : 'rgba(161, 161, 170, 0.3)',
+                    }}>
+                      {agent.isActive ? t.online : t.offline}
+                    </span>
+                    <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                      {agent.id.slice(0, 12)}...
+                    </span>
+                  </div>
                 </div>
               </div>
               <div style={{

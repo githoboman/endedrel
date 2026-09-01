@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Globe, Box } from 'lucide-react';
-import { getAgentIcon, getAgentColor } from './AgentIcons';
+import { getAgentIcon, getAgentColor, getAgentAvatar } from './AgentIcons';
 import { useI18n } from '@/lib/LanguageContext';
 
 interface Tool {
@@ -125,18 +125,18 @@ function AgentCard({ tool }: { tool: Tool }) {
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{
-            width: 44, height: 44,
-            background: `${color}15`,
-            border: `var(--border-width) solid ${color}`,
-            borderRadius: 'var(--radius-sm)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '2px 2px 0 0 rgba(0,0,0,0.1)',
-            color: 'var(--text-primary)'
-          }}>
-            {/* eslint-disable-next-line */}
-            <Icon size={24} color={color} strokeWidth={2.5} />
-          </div>
+          <img
+            src={getAgentAvatar(tool.id)}
+            alt={tool.name}
+            style={{
+              width: 44, height: 44,
+              borderRadius: '50%',
+              objectFit: 'cover',
+              border: `2px solid ${color}`,
+              boxShadow: '2px 2px 0 0 rgba(0,0,0,0.1)',
+              flexShrink: 0,
+            }}
+          />
            <div>
              <h4 style={{ fontSize: '1rem', fontWeight: 800, margin: 0, textTransform: 'uppercase', letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>{tool.name}</h4>
              <span className="mono" style={{ fontSize: '0.68rem', color: color, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{tool.category}</span>

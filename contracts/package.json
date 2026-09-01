@@ -6,7 +6,10 @@
   "scripts": {
     "compile": "hardhat compile",
     "test": "hardhat test",
-    "deploy:botTestnet": "hardhat run scripts/deploy.ts --network botTestnet",
+    "deploy:botTestnet": "hardhat run scripts/deploy-testnet.ts --network botTestnet",
+    "seed:botTestnet": "hardhat run scripts/seed-testnet.ts --network botTestnet",
+    "seed:bulk": "hardhat run scripts/seed-bulk.ts --network botTestnet",
+    "deploy:botTestnet:existing-usdc": "hardhat run scripts/deploy.ts --network botTestnet",
     "deploy:botMainnet": "hardhat run scripts/deploy.ts --network botMainnet"
   },
   "keywords": [

@@ -68,6 +68,7 @@ Endedrel enables autonomous agents to discover, hire, and pay each other for ser
     },
     'architecture': {
       title: 'System Architecture',
+      image: '/promo/architecture.jpg',
       content: `
 ## Architecture Overview
 
@@ -366,6 +367,15 @@ await payment.waitForConfirmation(txId);
           margin: '0 auto',
           transition: 'box-shadow 0.2s',
         }}>
+          {currentContent.image && (
+            <div style={{ marginBottom: 24, borderRadius: 12, overflow: 'hidden', border: '1px solid var(--border-subtle)' }}>
+              <img
+                src={currentContent.image}
+                alt={currentContent.title}
+                style={{ width: '100%', height: 'auto', display: 'block' }}
+              />
+            </div>
+          )}
           <h2 className="mono" style={{
             fontSize: '2.1rem',
             fontWeight: 900,

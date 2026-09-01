@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { AgentAvatarMap } from '@/components/AgentIcons';
 
 const API = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4002').replace(/\/$/, '');
 
@@ -56,6 +57,28 @@ export default function EconomyGraph({ refreshTrigger = 0 }: { refreshTrigger?: 
   const [stats, setStats] = useState<EconomyStats>({ totalPayments: 0, totalVolume: '0', a2aCount: 0, activeAgents: 0 });
   const [registry, setRegistry] = useState<any[]>([]);
   const nodesRef = useRef<PaymentNode[]>([]);
+  const imagesRef = useRef<Record<string, HTMLImageElement>>({});
+
+  // Preload cartoon robot avatar images for canvas drawing
+  useEffect(() => {
+    const avatarSources: Record<string, string> = {
+      user: '/agents/manager.jpg',
+      manager: '/agents/manager.jpg',
+      'weather-agent': '/agents/weather.jpg',
+      'summarizer-agent': '/agents/summarizer.jpg',
+      'math-agent': '/agents/math.jpg',
+      'sentiment-agent': '/agents/sentiment.jpg',
+      'code-agent': '/agents/code_explainer.jpg',
+      'research-agent': '/agents/research.jpg',
+      'coding-agent': '/agents/coding_agent.jpg',
+      'translate-agent': '/agents/coding_agent.jpg',
+    };
+    Object.entries(avatarSources).forEach(([key, src]) => {
+      const img = new Image();
+      img.src = src;
+      imagesRef.current[key] = img;
+    });
+  }, []);
 
   // Build node layout
   const buildNodes = useCallback((width: number, height: number): PaymentNode[] => {
@@ -187,12 +210,30 @@ export default function EconomyGraph({ refreshTrigger = 0 }: { refreshTrigger?: 
         ctx.fill();
         ctx.stroke();
 
-        // Icon/Label
-        ctx.fillStyle = colors.border;
-        ctx.font = `bold ${node.type === 'worker' ? 9 : 10}px var(--font-mono, monospace)`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(node.type === 'user' ? 'U' : node.type === 'manager' ? 'M' : 'W', node.x, node.y - 2);
+        // Draw cartoon robot avatar inside circle (clipped)
+        const avatarImg = imagesRef.current[node.id];
+        if (avatarImg && avatarImg.complete && avatarImg.naturalWidth > 0) {
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(node.x, node.y, radius - 1, 0, Math.PI * 2);
+          ctx.clip();
+          const imgSize = (radius - 1) * 2;
+          ctx.drawImage(avatarImg, node.x - radius + 1, node.y - radius + 1, imgSize, imgSize);
+          ctx.restore();
+          // Re-draw border on top of clipped image
+          ctx.beginPath();
+          ctx.arc(node.x, node.y, radius, 0, Math.PI * 2);
+          ctx.strokeStyle = colors.border;
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        } else {
+          // Fallback: draw letter if image not loaded
+          ctx.fillStyle = colors.border;
+          ctx.font = `bold ${node.type === 'worker' ? 9 : 10}px var(--font-mono, monospace)`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(node.type === 'user' ? 'U' : node.type === 'manager' ? 'M' : 'W', node.x, node.y - 2);
+        }
 
         // Label below
         ctx.fillStyle = '#475569';

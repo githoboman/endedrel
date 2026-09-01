@@ -47,6 +47,11 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import Groq from 'groq-sdk';
 import axios from 'axios';
 import { EXTERNAL_AGENTS, callExternalAgent } from './universal-adapter.js';
+import {
+  buildSkillRouter,
+  skillRegistryEntries,
+  skillToolEntries,
+} from './skill-agents.js';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Configuration
@@ -380,6 +385,12 @@ const agentRegistry: AgentRegistryEntry[] = [
   },
 ];
 
+// ── Skill Agents: 11 worker agents with real, key-free skill functions ──────
+// (JSON, hashing, unit/base conversion, regex, text stats, entropy, id-gen,
+// color, time, finance). Appended so they appear in the registry, discovery,
+// and stats alongside the built-in agents.
+agentRegistry.push(...skillRegistryEntries(SERVER_ADDRESS));
+
 /**
  * Robust Agent Lookup Helper
  * Finds agent by ID, Name (partial), or Category.
@@ -685,7 +696,7 @@ app.get('/api/tools', (_req: Request, res: Response) => {
     mcpCompatible: true // Badge for frontend
   }));
 
-  res.json([...localTools, ...externalTools]);
+  res.json([...localTools, ...skillToolEntries(), ...externalTools]);
 });
 
 function getToolParams(id: string): Record<string, string> {
@@ -2391,6 +2402,13 @@ app.post('/api/agent/stress-test', async (req: Request, res: Response) => {
     });
   })();
 });
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Skill Agents — paid endpoints with real, working skill functions
+// ═══════════════════════════════════════════════════════════════════════════
+// Reuses the same x402 paid-route middleware and payment log as the built-in
+// agents. Mounted before the 404 handler so its routes are reachable.
+app.use(buildSkillRouter({ createPaidRoute, logPayment }));
 
 // ═══════════════════════════════════════════════════════════════════════════
 // 404 + Error Handling
