@@ -45,6 +45,7 @@ import {
 } from './bot-x402.js';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import Groq from 'groq-sdk';
+import { chat as llmChat, llmAvailable, llmProviders } from './llm.js';
 import axios from 'axios';
 import { EXTERNAL_AGENTS, callExternalAgent } from './universal-adapter.js';
 import {
@@ -111,7 +112,37 @@ const app = express();
 // AI Clients
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 const geminiModel = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
-const groq = process.env.GROQ_API_KEY ? new Groq({ apiKey: process.env.GROQ_API_KEY }) : null;
+// Multi-provider LLM shim: keeps the OpenAI-style `.chat.completions.create()`
+// surface every worker route already uses, but routes through the NVIDIA →
+// Groq → Gemini chain in llm.ts. `groq` is truthy whenever ANY provider is
+// configured, so the existing `if (groq) { ... }` guards light up with NVIDIA.
+const groq = llmAvailable()
+  ? {
+      chat: {
+        completions: {
+          create: async (args: {
+            messages: { role: string; content: string }[];
+            model?: string;         // accepted for call-site compat; model is chosen in llm.ts
+            temperature?: number;
+            max_tokens?: number;
+            response_format?: { type: string };
+          }) => {
+            const sys = args.messages.find(m => m.role === 'system')?.content;
+            const user = args.messages.filter(m => m.role === 'user').map(m => m.content).join('\n\n');
+            const content = await llmChat(user, {
+              system: sys,
+              temperature: args.temperature,
+              maxTokens: args.max_tokens,
+              json: args.response_format?.type === 'json_object',
+            });
+            return { choices: [{ message: { content: content ?? '' } }] };
+          },
+        },
+      },
+    }
+  : null;
+if (llmAvailable()) console.log(`[llm] Providers active (priority order): ${llmProviders().join(' → ')}`);
+
 
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 app.use(cors({

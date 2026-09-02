@@ -361,14 +361,14 @@ await payment.waitForConfirmation(txId);
           background: 'linear-gradient(120deg, #f8fafc 80%, #e6eaff 100%)',
           border: '2px solid var(--accent-light)',
           boxShadow: '0 4px 32px 0 rgba(80,120,255,0.07)',
-          borderRadius: '18px',
+          borderRadius: 'var(--radius-sm)',
           minHeight: 480,
           maxWidth: 820,
           margin: '0 auto',
           transition: 'box-shadow 0.2s',
         }}>
           {currentContent.image && (
-            <div style={{ marginBottom: 24, borderRadius: 12, overflow: 'hidden', border: '1px solid var(--border-subtle)' }}>
+            <div style={{ marginBottom: 24, borderRadius: 'var(--radius-sm)', overflow: 'hidden', border: '1px solid var(--border-subtle)' }}>
               <img
                 src={currentContent.image}
                 alt={currentContent.title}
@@ -449,7 +449,7 @@ await payment.waitForConfirmation(txId);
                         <code key={j} className="mono" style={{
                           backgroundColor: 'var(--bg-secondary)',
                           padding: '2px 6px',
-                          borderRadius: 4,
+                          borderRadius: 'var(--radius-sm)',
                           fontSize: '0.9em',
                           color: 'var(--accent-primary)',
                           border: '1px solid var(--border-subtle)',

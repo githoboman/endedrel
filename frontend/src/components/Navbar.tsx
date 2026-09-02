@@ -113,7 +113,7 @@ export default function Navbar() {
               style={{
                 width: 44,
                 height: 44,
-                borderRadius: 10,
+                borderRadius: 'var(--radius-sm)',
                 boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
                 border: '1px solid var(--border-subtle)',
                 transition: 'transform 0.2s ease',
@@ -129,7 +129,7 @@ export default function Navbar() {
             right: -3,
             width: 10,
             height: 10,
-            borderRadius: '50%',
+            borderRadius: 'var(--radius-sm)',
             backgroundColor: '#FF854B',
             border: '2px solid #fff',
             boxShadow: '0 0 6px rgba(255,133,75,0.4)',
@@ -155,7 +155,7 @@ export default function Navbar() {
               padding: '2px 7px',
               backgroundColor: 'rgba(255,133,75,0.08)',
               border: '1px solid rgba(255,133,75,0.25)',
-              borderRadius: 4,
+              borderRadius: 'var(--radius-sm)',
             }}>
               v2.0
             </span>
@@ -186,7 +186,7 @@ export default function Navbar() {
                 color: isActive(item.path) ? 'var(--text-primary)' : 'var(--text-secondary)',
                 textDecoration: 'none',
                 padding: '7px 12px',
-                borderRadius: 7,
+                borderRadius: 'var(--radius-sm)',
                 transition: 'all 0.2s ease',
                 backgroundColor: isActive(item.path) ? 'var(--surface-muted)' : 'transparent',
                 border: isActive(item.path) ? '1px solid var(--border-strong)' : '1px solid transparent',
@@ -226,14 +226,14 @@ export default function Navbar() {
             padding: '5px 10px',
             background: modeBadge.bg,
             border: `1px solid ${modeBadge.border}`,
-            borderRadius: 20,
+            borderRadius: 'var(--radius-sm)',
             cursor: 'default',
             userSelect: 'none',
           }}
         >
           <span style={{
             width: 7, height: 7,
-            borderRadius: '50%',
+            borderRadius: 'var(--radius-sm)',
             background: modeBadge.dot,
             boxShadow: backendMode !== 'checking' && backendMode !== 'offline'
               ? `0 0 6px ${modeBadge.dot}`
@@ -266,7 +266,7 @@ export default function Navbar() {
                   background: language === lang ? 'var(--surface-muted)' : 'transparent',
                   color: language === lang ? 'var(--text-primary)' : 'var(--text-tertiary)',
                   border: '1px solid', borderColor: language === lang ? 'var(--border-strong)' : 'transparent',
-                  borderRadius: 4, cursor: 'pointer', fontFamily: 'var(--font-mono)',
+                  borderRadius: 'var(--radius-sm)', cursor: 'pointer', fontFamily: 'var(--font-mono)',
                   transition: 'all 0.15s ease',
                 }}
               >
@@ -292,7 +292,7 @@ export default function Navbar() {
           padding: 10,
           background: 'transparent',
           border: '1px solid #e5e7eb',
-          borderRadius: 8,
+          borderRadius: 'var(--radius-sm)',
           cursor: 'pointer',
           transition: 'all 0.2s ease',
         }}
@@ -302,7 +302,7 @@ export default function Navbar() {
             width: 22,
             height: 2,
             backgroundColor: '#374151',
-            borderRadius: 2,
+            borderRadius: 'var(--radius-sm)',
             transition: 'all 0.3s ease',
             transform: i === 0 && mobileMenuOpen ? 'rotate(45deg) translateY(7px)'
               : i === 2 && mobileMenuOpen ? 'rotate(-45deg) translateY(-7px)'
@@ -338,11 +338,11 @@ export default function Navbar() {
             padding: '6px 12px',
             background: modeBadge.bg,
             border: `1px solid ${modeBadge.border}`,
-            borderRadius: 20,
+            borderRadius: 'var(--radius-sm)',
             marginBottom: 4,
             width: 'fit-content',
           }}>
-            <span style={{ width: 7, height: 7, borderRadius: '50%', background: modeBadge.dot }} />
+            <span style={{ width: 7, height: 7, borderRadius: 'var(--radius-sm)', background: modeBadge.dot }} />
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', fontWeight: 700, color: modeBadge.text, textTransform: 'uppercase' }}>
               {modeBadge.label}
             </span>
@@ -360,7 +360,7 @@ export default function Navbar() {
                 color: isActive(item.path) ? 'var(--text-primary)' : 'var(--text-secondary)',
                 textDecoration: 'none',
                 padding: '12px 16px',
-                borderRadius: 8,
+                borderRadius: 'var(--radius-sm)',
                 backgroundColor: isActive(item.path) ? 'var(--surface-muted)' : 'transparent',
                 border: isActive(item.path) ? '1px solid var(--border-strong)' : '1px solid transparent',
                 transition: 'all 0.2s ease',

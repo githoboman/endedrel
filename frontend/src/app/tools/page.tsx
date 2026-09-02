@@ -197,7 +197,7 @@ export default function ToolsPage() {
                     color: '#9333ea',
                     backgroundColor: 'rgba(168, 85, 247, 0.1)',
                     padding: '2px 8px',
-                    borderRadius: 4,
+                    borderRadius: 'var(--radius-sm)',
                   }}>
                     {tool.endpoint}
                   </code>

@@ -92,7 +92,8 @@ export default function Home() {
             style={{
               width: '100%',
               height: 'auto',
-              borderRadius: 'calc(var(--radius-lg) - 8px)',
+              borderRadius: 'var(--radius-sm)',
+              border: 'var(--border-width) solid var(--border-strong)',
               display: 'block',
             }}
           />
@@ -153,7 +154,8 @@ export default function Home() {
               style={{
                 width: '100%',
                 height: 'auto',
-                borderRadius: 'calc(var(--radius-lg) - 8px)',
+                borderRadius: 'var(--radius-sm)',
+                border: 'var(--border-width) solid var(--border-strong)',
                 display: 'block',
               }}
             />

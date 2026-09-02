@@ -1,90 +1,87 @@
 :root {
-  /* ── Light Theme (Neumorphic Glass) ── */
-  --bg-primary: #e0e5ec;
-  --bg-secondary: #d1d9e6;
-  --bg-tertiary: #c8d0e0;
+  /* ── Light Theme (Daylight Cyberpunk / Brutalist) ── */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f4f4f5;
+  --bg-tertiary: #e4e4e7;
 
-  --text-primary: #2d3748;
-  --text-secondary: #4a5568;
-  --text-tertiary: #718096;
+  --text-primary: #000000;
+  --text-secondary: #3f3f46;
+  --text-tertiary: #71717a;
   --text-inverse: #ffffff;
 
   /* Accents */
-  --accent-cyan: #0bc5ea;
-  --accent-violet: #805ad5;
-  --accent-500: #3182ce;
-  --accent-hover: #2b6cb0;
+  --accent-cyan: #00f0ff;
+  --accent-violet: #d946ef;
+  --accent-500: #eab308; /* Cyber Yellow fallback */
+  --accent-hover: #00f0ff;
 
   /* Semantic */
-  --success: #38a169;
-  --warning: #dd6b20;
-  --error: #e53e3e;
-  --info: #3182ce;
+  --success: #10b981;
+  --warning: #fcee0a; /* Cyber Yellow */
+  --error: #ff003c; /* Cyber Red/Magenta */
+  --info: #00f0ff;
 
-  /* Glass-Neumorphism Structural - Light */
-  --border-width: 1px;
-  --border-strong: rgba(255, 255, 255, 0.4);
-  --border-subtle: rgba(255, 255, 255, 0.2);
+  /* Brutalist Structural - Light */
+  --border-width: 2px;
+  --border-strong: #000000;
+  --border-subtle: #a1a1aa;
 
-  --radius-sm: 12px;
-  --radius-md: 20px;
-  --radius-lg: 32px;
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
 
-  /* Neumorphic Shadows - Light */
-  /* Outer: top-left light, bottom-right dark */
-  --shadow-neo: 9px 9px 16px rgb(163,177,198,0.6), -9px -9px 16px rgba(255,255,255, 0.5);
-  --shadow-neo-sm: 5px 5px 10px rgb(163,177,198,0.5), -5px -5px 10px rgba(255,255,255, 0.5);
-  /* Inset: for pressed buttons or deep wells */
-  --shadow-neo-inset: inset 6px 6px 10px 0 rgba(163,177,198, 0.5), inset -6px -6px 10px 0 rgba(255,255,255, 0.5);
+  /* Brutalist Shadows - Light (Solid hard shadow) */
+  --shadow-neo: 4px 4px 0px 0px #000000;
+  --shadow-neo-sm: 2px 2px 0px 0px #000000;
+  --shadow-neo-inset: inset 2px 2px 0px 0px rgba(0,0,0,0.1);
 
-  /* Glass Surfaces - Light */
-  --surface: rgba(224, 229, 236, 0.6);
-  --surface-solid: #e0e5ec;
+  /* Surfaces - Light */
+  --surface: #ffffff;
+  --surface-solid: #ffffff;
 
   /* Fonts */
   --font-sans: "Inter", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", "Space Mono", monospace;
 
-  --btc: #f59e0b;
+  --btc: #fcee0a;
 }
 
 [data-theme="dark"],
 .dark {
-  /* ── Dark Theme (Neumorphic Glass) ── */
-  --bg-primary: #1a202c; 
-  --bg-secondary: #171923;
-  --bg-tertiary: #11141c;
+  /* ── Dark Theme (Classic Dark Cyberpunk) ── */
+  --bg-primary: #09090b; 
+  --bg-secondary: #18181b;
+  --bg-tertiary: #27272a;
 
-  --text-primary: #f7fafc;
-  --text-secondary: #e2e8f0;
-  --text-tertiary: #a0aec0;
-  --text-inverse: #1a202c;
+  --text-primary: #ffffff;
+  --text-secondary: #a1a1aa;
+  --text-tertiary: #71717a;
+  --text-inverse: #000000;
 
   /* Accents - Dark */
-  --accent-cyan: #00b5d8;
-  --accent-violet: #9f7aea;
-  --accent-500: #63b3ed;
-  --accent-hover: #90cdf4;
+  --accent-cyan: #00f0ff;
+  --accent-violet: #d946ef;
+  --accent-500: #eab308;
+  --accent-hover: #00f0ff;
 
-  --success: #48bb78;
-  --warning: #ed8936;
-  --error: #f56565;
-  --info: #4299e1;
+  --success: #10b981;
+  --warning: #fcee0a;
+  --error: #ff003c;
+  --info: #00f0ff;
 
-  /* Glass-Neumorphism Structural - Dark */
-  --border-strong: rgba(255, 255, 255, 0.05);
-  --border-subtle: rgba(255, 255, 255, 0.02);
+  /* Brutalist Structural - Dark */
+  --border-width: 2px;
+  --border-strong: #ffffff;
+  --border-subtle: #52525b;
 
-  /* Neumorphic Shadows - Dark */
-  /* Outer: top-left very faint white, bottom-right deep black */
-  --shadow-neo: 8px 8px 16px rgba(0, 0, 0, 0.6), -8px -8px 16px rgba(255, 255, 255, 0.03);
-  --shadow-neo-sm: 4px 4px 8px rgba(0, 0, 0, 0.5), -4px -4px 8px rgba(255, 255, 255, 0.02);
-  /* Inset */
-  --shadow-neo-inset: inset 6px 6px 10px 0 rgba(0, 0, 0, 0.5), inset -6px -6px 10px 0 rgba(255, 255, 255, 0.03);
+  /* Brutalist Shadows - Dark (Solid hard shadow, often neon or stark white) */
+  --shadow-neo: 4px 4px 0px 0px #00f0ff;
+  --shadow-neo-sm: 2px 2px 0px 0px #00f0ff;
+  --shadow-neo-inset: inset 2px 2px 0px 0px rgba(255,255,255,0.1);
 
-  /* Glass Surfaces - Dark */
-  --surface: rgba(26, 32, 44, 0.6);
-  --surface-solid: #1a202c;
+  /* Surfaces - Dark */
+  --surface: #18181b;
+  --surface-solid: #18181b;
 }
 
 * {
@@ -103,42 +100,51 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   transition: background-color 0.3s ease, color 0.3s ease;
+  
+  /* Cyberpunk Grid Overlay */
+  background-image: linear-gradient(var(--border-subtle) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border-subtle) 1px, transparent 1px);
+  background-size: 40px 40px;
+  background-position: center center;
 }
 
-/* ── Neo-Glass Panels ── */
+.dark body {
+  background-image: linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+}
+
+/* ── Cyber Brutalist Panels ── */
 .neo-glass-panel {
   background: var(--surface);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
   border: var(--border-width) solid var(--border-strong);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-neo);
-  transition: all 0.3s ease;
+  transition: all 0.15s ease;
   position: relative;
   overflow: hidden;
   padding: 32px;
 }
 
 .neo-glass-panel:hover {
-  transform: translateY(-2px);
-  /* Slight intensify of shadow on hover */
-  box-shadow: 12px 12px 20px rgb(163,177,198,0.7), -12px -12px 20px rgba(255,255,255, 0.6);
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px 0px var(--border-strong);
 }
 
 .dark .neo-glass-panel:hover {
-  box-shadow: 12px 12px 20px rgba(0, 0, 0, 0.8), -12px -12px 20px rgba(255, 255, 255, 0.04);
+  box-shadow: 6px 6px 0px 0px var(--accent-cyan);
 }
 
 .neo-header {
-  font-family: var(--font-sans);
+  font-family: var(--font-mono); /* Force mono for cyberpunk headers */
   font-size: 1.1rem;
-  font-weight: 700;
+  font-weight: 800;
+  text-transform: uppercase;
   color: var(--text-primary);
   margin-bottom: 24px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid var(--border-subtle);
+  border-bottom: var(--border-width) solid var(--border-strong);
   padding-bottom: 16px;
 }
 
@@ -154,67 +160,88 @@ body {
   background-clip: text;
 }
 
-/* ── Buttons (Neumorphic) ── */
+/* ── Buttons (Brutalist) ── */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   padding: 12px 24px;
-  background: var(--surface-solid);
+  background: var(--bg-primary);
   color: var(--text-primary);
-  font-family: var(--font-sans);
-  font-weight: 600;
+  font-family: var(--font-mono);
+  font-weight: 800;
+  text-transform: uppercase;
   cursor: pointer;
-  transition: all 0.2s ease;
-  border-radius: var(--radius-md);
-  border: none;
-  box-shadow: var(--shadow-neo-sm);
+  transition: all 0.1s ease;
+  border-radius: var(--radius-sm);
+  border: var(--border-width) solid var(--border-strong);
+  box-shadow: 4px 4px 0px 0px var(--border-strong);
+}
+
+.dark .btn {
+  box-shadow: 4px 4px 0px 0px var(--accent-cyan);
 }
 
 .btn:hover {
-  box-shadow: var(--shadow-neo);
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px 0px var(--accent-500);
 }
 
 .btn:active {
-  box-shadow: var(--shadow-neo-inset);
-  transform: scale(0.98);
+  transform: translate(2px, 2px);
+  box-shadow: 0px 0px 0px 0px var(--border-strong);
 }
 
 .btn-primary {
-  color: var(--accent-500);
+  background: var(--accent-500);
+  color: #000;
+  border-color: #000;
+}
+.dark .btn-primary {
+  background: var(--accent-cyan);
 }
 
-/* ── Badges (Inset Wells) ── */
+/* ── Badges (Hard Boxes) ── */
 .badge {
   display: inline-flex;
   align-items: center;
   padding: 6px 14px;
-  background: var(--surface-solid);
-  border-radius: var(--radius-md);
+  background: var(--bg-secondary);
+  border: var(--border-width) solid var(--border-strong);
+  border-radius: 0px;
   font-size: 0.75rem;
-  font-weight: 600;
-  font-family: var(--font-sans);
-  color: var(--text-secondary);
-  box-shadow: var(--shadow-neo-inset);
+  font-weight: 800;
+  text-transform: uppercase;
+  font-family: var(--font-mono);
+  color: var(--text-primary);
+  box-shadow: 2px 2px 0px 0px var(--border-strong);
+}
+.dark .badge {
+  box-shadow: 2px 2px 0px 0px var(--accent-cyan);
 }
 
 .badge-stx, .badge-a2a {
+  background: var(--accent-cyan);
+  color: #000;
+}
+.dark .badge-stx, .dark .badge-a2a {
+  background: var(--bg-secondary);
   color: var(--accent-cyan);
 }
 
-/* ── Scrollbar ── */
+/* ── Scrollbar (Blocky) ── */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 12px;
+  height: 12px;
+  background: var(--bg-secondary);
+  border-left: var(--border-width) solid var(--border-strong);
 }
 ::-webkit-scrollbar-track {
-  background: var(--shadow-neo-inset);
-  border-radius: 4px;
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--surface-solid);
-  border-radius: 4px;
-  box-shadow: var(--shadow-neo-sm);
+  background: var(--border-strong);
+  border: 2px solid var(--bg-secondary);
 }
 
 /* ── Landing Page Hero ── */
@@ -260,7 +287,7 @@ body {
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: 24px;
   background: var(--surface);
-  backdrop-filter: blur(20px);
+  border: var(--border-width) solid var(--border-strong);
   border-radius: var(--radius-lg);
   padding: 32px;
   box-shadow: var(--shadow-neo);
@@ -273,9 +300,9 @@ body {
 }
 
 .hero-stat-label {
-  font-family: var(--font-sans);
+  font-family: var(--font-mono);
   font-size: 0.8rem;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--text-tertiary);
@@ -284,7 +311,7 @@ body {
 .hero-stat-value {
   font-family: var(--font-mono);
   font-size: 1.5rem;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--text-primary);
 }
 
@@ -297,25 +324,30 @@ body {
 }
 
 .hero-btn {
-  font-family: var(--font-sans);
+  font-family: var(--font-mono);
   font-size: 1.1rem;
-  font-weight: 700;
+  font-weight: 800;
+  text-transform: uppercase;
   padding: 18px 40px;
   cursor: pointer;
-  border-radius: var(--radius-md);
-  background: var(--surface-solid);
-  color: var(--accent-500);
-  border: none;
-  box-shadow: var(--shadow-neo);
-  transition: all 0.2s ease;
+  border-radius: var(--radius-sm);
+  background: var(--accent-cyan);
+  color: #000;
+  border: var(--border-width) solid var(--border-strong);
+  box-shadow: 4px 4px 0px 0px var(--border-strong);
+  transition: all 0.1s ease;
+}
+.dark .hero-btn {
+  box-shadow: 4px 4px 0px 0px var(--accent-cyan);
 }
 
 .hero-btn:hover {
-  transform: translateY(-2px);
-  color: var(--accent-hover);
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px 0px var(--accent-500);
+  background: var(--accent-500);
 }
 
 .hero-btn:active {
-  box-shadow: var(--shadow-neo-inset);
-  transform: scale(0.98);
+  transform: translate(2px, 2px);
+  box-shadow: 0px 0px 0px 0px var(--border-strong);
 }
