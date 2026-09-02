@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { AgentAvatarMap } from '@/components/AgentIcons';
+import { SETTLEMENT_SYMBOL } from '@/lib/userSession';
 
 const API = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4002').replace(/\/$/, '');
 
@@ -124,7 +125,7 @@ export default function EconomyGraph({ refreshTrigger = 0 }: { refreshTrigger?: 
           from: p.isA2A ? (p.payer || 'manager') : 'manager',
           to: p.endpoint ? agentIdFromEndpoint(p.endpoint) : 'unknown',
           amount: p.amount || '0',
-          token: p.token || 'USDC',
+          token: p.token || SETTLEMENT_SYMBOL,
           isA2A: p.isA2A || false,
           timestamp: p.timestamp || Date.now(),
           active: Date.now() - (p.timestamp || 0) < 10000,
@@ -287,7 +288,7 @@ export default function EconomyGraph({ refreshTrigger = 0 }: { refreshTrigger?: 
       }}>
         {[
           { label: 'Payments', value: stats.totalPayments, accent: 'var(--accent-500)' },
-          { label: 'Volume', value: `${stats.totalVolume}`, unit: 'USDC', accent: 'var(--btc)' },
+          { label: 'Volume', value: `${stats.totalVolume}`, unit: SETTLEMENT_SYMBOL, accent: 'var(--btc)' },
           { label: 'A2A Hires', value: stats.a2aCount, accent: 'var(--accent-500)' },
           { label: 'Agents', value: stats.activeAgents, accent: 'var(--success)' },
         ].map(s => (

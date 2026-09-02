@@ -25,7 +25,7 @@ import {
 } from 'viem';
 import { activeChain, getProvider } from './userSession';
 
-// ── Deployed contract addresses (BOT testnet) ──────────────────────────────
+// ── Deployed contract addresses (BOT mainnet by default) ───────────────────
 // Overridable via env for mainnet / redeploys.
 export const REGISTRY_ADDRESS = (process.env.NEXT_PUBLIC_REGISTRY_ADDRESS ||
   '0x5161ceF4b95EA0E95296FF3a6d7D6084072754f5') as Address;

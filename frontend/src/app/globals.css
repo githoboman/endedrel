@@ -351,3 +351,161 @@ body {
   transform: translate(2px, 2px);
   box-shadow: 0px 0px 0px 0px var(--border-strong);
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Hire flow — the money-moving interaction.
+   Design intent: a payment UI must answer three questions before the user
+   commits (what it costs, what happens next, how to undo), and must never
+   present a cancelled transaction as an error. Styling follows the existing
+   neo-brutalist system: 0 radius, 2px solid borders, hard offset shadows.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.hire { margin-top: 12px; }
+
+.hire-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 12px;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text-inverse);
+  background: var(--accent-500);
+  border: var(--border-width) solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-neo-sm);
+  cursor: pointer;
+  transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.15s ease;
+}
+.hire-btn:hover:not(:disabled) { transform: translate(-1px, -1px); box-shadow: var(--shadow-neo); }
+/* Press mimics the button physically depressing into the page. */
+.hire-btn:active:not(:disabled) { transform: translate(2px, 2px); box-shadow: 0 0 0 0 var(--border-strong); }
+.hire-btn:focus-visible { outline: 3px solid var(--accent-cyan); outline-offset: 2px; }
+.hire-btn:disabled { cursor: not-allowed; }
+.hire-btn.is-busy { background: var(--bg-secondary); color: var(--text-secondary); }
+.hire-btn.is-disabled { background: var(--bg-secondary); color: var(--text-tertiary); box-shadow: none; }
+
+/* Motion is the only reliable signal that an off-screen wallet popup is pending. */
+.hire-spinner {
+  width: 12px; height: 12px; flex: none;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: hire-spin 0.7s linear infinite;
+}
+@keyframes hire-spin { to { transform: rotate(360deg); } }
+
+.hire-hint {
+  margin: 6px 0 0;
+  font-size: 0.68rem;
+  line-height: 1.45;
+  color: var(--text-tertiary);
+}
+
+/* Step list: tells the user which of three stages they are in. */
+.hire-steps {
+  list-style: none;
+  display: flex;
+  gap: 6px;
+  margin: 8px 0 0;
+  padding: 0;
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.hire-steps li {
+  flex: 1;
+  padding: 4px 2px;
+  text-align: center;
+  color: var(--text-tertiary);
+  border-top: 3px solid var(--border-subtle);
+}
+.hire-steps li.is-active { color: var(--text-primary); border-top-color: var(--accent-500); }
+.hire-steps li.is-complete { color: var(--text-secondary); border-top-color: var(--success); }
+
+.hire-status {
+  margin-top: 8px;
+  padding: 8px 10px;
+  font-size: 0.7rem;
+  line-height: 1.5;
+  border: var(--border-width) solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--bg-secondary);
+}
+/* A left rule carries the state colour: readable without relying on hue alone. */
+.hire-status.is-done { border-left: 6px solid var(--success); }
+.hire-status.is-error { border-left: 6px solid var(--error); }
+.hire-status.is-busy { border-left: 6px solid var(--accent-500); }
+.hire-status-msg { display: block; color: var(--text-primary); font-weight: 600; }
+
+.hire-link {
+  display: inline-block;
+  margin-top: 6px;
+  font-weight: 800;
+  font-size: 0.68rem;
+  color: var(--text-primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.hire-link:hover { color: var(--accent-hover); }
+
+/* Results as labelled rows — a raw JSON dump is not a user-facing answer. */
+.hire-result { margin: 8px 0 0; display: grid; gap: 4px; }
+.hire-result-row {
+  display: grid;
+  grid-template-columns: minmax(64px, 34%) 1fr;
+  gap: 8px;
+  padding-top: 4px;
+  border-top: 1px dashed var(--border-subtle);
+}
+.hire-result-row dt {
+  font-size: 0.62rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-tertiary);
+}
+.hire-result-row dd {
+  margin: 0;
+  font-size: 0.7rem;
+  color: var(--text-primary);
+  word-break: break-word;
+}
+.hire-result-text { margin-top: 8px; font-size: 0.72rem; color: var(--text-primary); }
+
+/* ── Network badge: trust signal, shown before anything else ── */
+.net-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 14px;
+  padding: 4px 10px;
+  font-size: 0.66rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-primary);
+  background: var(--surface);
+  border: var(--border-width) solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-neo-sm);
+}
+.net-dot {
+  width: 7px; height: 7px; flex: none;
+  background: var(--success);
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--success) 25%, transparent);
+}
+.net-dot--test { background: var(--warning); box-shadow: 0 0 0 3px color-mix(in srgb, var(--warning) 30%, transparent); }
+
+/* Respect users who have asked the OS to reduce motion. */
+@media (prefers-reduced-motion: reduce) {
+  .hire-spinner { animation-duration: 2s; }
+  .hire-btn { transition: none; }
+}

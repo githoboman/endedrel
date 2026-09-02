@@ -7,6 +7,7 @@ import { A2ATopology } from './A2ATopology';
 import { getAgentIcon, getAgentColor } from './AgentIcons';
 import { useI18n } from '@/lib/LanguageContext';
 import { fmtCost } from '@/lib/format';
+import { SETTLEMENT_SYMBOL } from '@/lib/userSession';
 
 // ── Example queries surfaced in the empty state and quick-chip bar ──
 const EXAMPLE_QUERIES = [
@@ -361,7 +362,7 @@ export default function AgentChat({ onNewPayments, onProtocolTrace }: Params) {
           onProtocolTrace({ type: 'a2a-hire', ...data });
           setMessages(prev => [...prev, {
             role: 'system',
-            content: `🔄 **Recursive Hire:** ${data.hirer} hired **${data.worker}** for ${data.cost} USDC.`,
+            content: `🔄 **Recursive Hire:** ${data.hirer} hired **${data.worker}** for ${data.cost} ${SETTLEMENT_SYMBOL}.`,
             depth: data.depth || 1
           }]);
         } catch (e) { console.error('SSE A2A Error:', e); }
@@ -565,7 +566,7 @@ export default function AgentChat({ onNewPayments, onProtocolTrace }: Params) {
               marginBottom: 20,
             }}>
               Ask anything. Agents will autonomously plan, hire, and settle on-chain in{' '}
-              <strong style={{ color: 'var(--accent-500)' }}>USDC</strong>.
+              <strong style={{ color: 'var(--accent-500)' }}>{SETTLEMENT_SYMBOL}</strong>.
             </p>
 
             {/* 2-column chips grid */}

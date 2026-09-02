@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { DollarSign, Cpu, ArrowRight } from 'lucide-react';
 import { fmtCost } from '@/lib/format';
+import { SETTLEMENT_SYMBOL } from '@/lib/userSession';
 
 interface AgentHire {
   agent: string;
@@ -46,7 +47,7 @@ export const A2ATopology = ({ hires }: { hires: AgentHire[] }) => {
         y,
         label: hire.agent,
         cost: hire.cost,
-        currency: hire.currency || 'USDC',
+        currency: hire.currency || SETTLEMENT_SYMBOL,
         depth
       });
 
