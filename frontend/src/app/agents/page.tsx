@@ -82,7 +82,7 @@ export default function AgentsPage() {
       </div>
 
       {/* Stats Bar */}
-      <div style={{
+      <div className="responsive-grid-4" style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(4, 1fr)',
         gap: 20,
@@ -140,7 +140,7 @@ export default function AgentsPage() {
       {/* Agents Grid */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(min(350px, 100%), 1fr))',
         gap: 24,
       }}>
         {sortedAgents.map((agent) => (
@@ -160,8 +160,8 @@ export default function AgentsPage() {
               position: 'absolute',
               top: -20,
               right: -20,
-              width: 100,
-              height: 100,
+              width: 'clamp(64px, 18vw, 100px)',
+              height: 'clamp(64px, 18vw, 100px)',
               background: `radial-gradient(circle, ${agent.efficiency > 5000 ? 'rgba(52, 211, 153, 0.1)' : 'rgba(168, 85, 247, 0.05)'} 0%, transparent 70%)`,
               zIndex: 0
             }} />

@@ -319,3 +319,93 @@ body {
   box-shadow: var(--shadow-neo-inset);
   transform: scale(0.98);
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   RESPONSIVE SYSTEM
+   Mobile-first corrections layered over the desktop design. Three ideas:
+   1. The page shell uses fluid padding, so margins shrink with the viewport
+      instead of forcing a horizontal scrollbar.
+   2. Nothing is allowed to exceed the viewport width — wide content (tables,
+      code, canvases) scrolls inside its own container, never the body.
+   3. Touch targets meet the 44px minimum on coarse pointers.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Page shell ── */
+.app-shell {
+  min-height: 100vh;
+  max-width: 1800px;
+  margin: 0 auto;
+  /* Fluid gutters: 16px on a phone, up to 32px on a desktop, plus the
+     device safe-area inset so content clears notches in landscape. */
+  padding-left: max(clamp(16px, 4vw, 32px), env(safe-area-inset-left));
+  padding-right: max(clamp(16px, 4vw, 32px), env(safe-area-inset-right));
+  padding-bottom: calc(40px + env(safe-area-inset-bottom));
+}
+
+/* ── Global overflow guards ──
+   A single overflowing child creates a body-wide horizontal scroll that makes
+   an app feel broken. These stop that at the source. */
+html, body { max-width: 100%; overflow-x: hidden; }
+img, video, canvas, svg { max-width: 100%; height: auto; }
+/* Long URLs / hashes / addresses are everywhere in this app and are the most
+   common cause of overflow on narrow screens. */
+p, li, dd, td, th, h1, h2, h3, h4 { overflow-wrap: break-word; }
+pre { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+/* ── Tablet and below ── */
+@media (max-width: 900px) {
+  .hero { margin: 56px 0; }
+  .hero-eyebrow { font-size: 0.85rem; margin-bottom: 16px; letter-spacing: 0.08em; }
+  .hero-title { margin-bottom: 20px; }
+  .hero-lead { margin-bottom: 28px; }
+  .hero-ticker { padding: 20px; gap: 16px; }
+
+  /* Inline-styled two-column sections collapse to one column. */
+  .responsive-2col { grid-template-columns: 1fr !important; gap: 28px !important; }
+  /* Docs sidebar stacks above content instead of squeezing it. */
+  .responsive-sidebar { grid-template-columns: 1fr !important; gap: 20px !important; }
+}
+
+/* ── Phones ── */
+@media (max-width: 640px) {
+  .hero { margin: 36px 0; }
+  .hero-ticker {
+    grid-template-columns: repeat(2, 1fr);
+    padding: 16px;
+    gap: 14px;
+    box-shadow: var(--shadow-neo-sm);
+  }
+  .hero-stat { gap: 6px; }
+  .hero-actions { flex-direction: column; align-items: stretch; gap: 10px; }
+  .hero-actions .hero-btn { width: 100%; }
+
+  /* Stat/agent grids: two columns reads better than four cramped ones. */
+  .responsive-grid-4 { grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; }
+  /* Card lists go single-column so each card keeps a usable width. */
+  .responsive-cards { grid-template-columns: 1fr !important; }
+
+  /* Panels lose their generous desktop padding. */
+  .neo-glass-panel { padding: 16px !important; }
+
+  .hire-steps { font-size: 0.56rem; gap: 4px; }
+  .net-badge { font-size: 0.6rem; padding: 4px 8px; }
+}
+
+/* ── Small phones (≤380px: iPhone SE, older Androids) ── */
+@media (max-width: 380px) {
+  .hero-ticker { grid-template-columns: 1fr; }
+  .responsive-grid-4 { grid-template-columns: 1fr !important; }
+  .hire-steps { flex-direction: column; gap: 2px; }
+  .hire-steps li { text-align: left; border-top: none; border-left: 3px solid var(--border-subtle); padding: 2px 0 2px 8px; }
+  .hire-steps li.is-active { border-left-color: var(--accent-500); }
+  .hire-steps li.is-complete { border-left-color: var(--success); }
+}
+
+/* ── Touch ergonomics ──
+   Applies to touch devices only, so desktop density is preserved. */
+@media (pointer: coarse) {
+  button, a.btn, .hero-btn, .hire-btn { min-height: 44px; }
+  /* Give tappable rows breathing room to avoid mis-taps. */
+  .hire-link { display: inline-block; padding: 6px 0; }
+}

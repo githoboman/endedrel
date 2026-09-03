@@ -279,7 +279,7 @@ export default function EconomyGraph({ refreshTrigger = 0 }: { refreshTrigger?: 
   return (
     <div className="glass-panel" style={{ padding: 16 }}>
       {/* Stat tiles — summary before detail */}
-      <div style={{
+      <div className="responsive-grid-4" style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(4, 1fr)',
         gap: 10,
@@ -316,7 +316,7 @@ export default function EconomyGraph({ refreshTrigger = 0 }: { refreshTrigger?: 
       </div>
       {/* Canvas */}
       <div style={{ position: 'relative', borderRadius: 'var(--radius-sm)', overflow: 'hidden', border: '2px solid var(--border-strong)', background: 'var(--bg-tertiary)' }}>
-        <canvas ref={canvasRef} style={{ width: '100%', height: 260, display: 'block' }} />
+        <canvas ref={canvasRef} style={{ width: '100%', height: 'clamp(180px, 34vw, 260px)', display: 'block' }} />
         {/* Legend */}
         <div style={{
           position: 'absolute', bottom: 8, left: 12,

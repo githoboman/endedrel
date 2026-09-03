@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Inter, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import Navbar from '@/components/Navbar';
@@ -34,12 +34,26 @@ export const metadata: Metadata = {
   },
 };
 
+/**
+ * Explicit viewport: `viewport-fit=cover` lets the page paint into the safe
+ * areas on notched phones (we pad for them in CSS), and allowing zoom up to 5x
+ * keeps the page accessible — never set maximum-scale=1 / user-scalable=no.
+ */
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  viewportFit: 'cover',
+};
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} ${jetbrainsMono.variable}`}>
         <Providers>
-          <main style={{ minHeight: '100vh', padding: '0 32px 40px', maxWidth: 1800, margin: '0 auto' }}>
+          {/* Side padding is fluid (see .app-shell in globals.css) so the
+              layout tightens on phones instead of forcing horizontal scroll. */}
+          <main className="app-shell">
             <Navbar />
             {children}
             <Footer />

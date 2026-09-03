@@ -569,7 +569,7 @@ export default function AgentChat({ onNewPayments, onProtocolTrace }: Params) {
             </p>
 
             {/* 2-column chips grid */}
-            <div style={{
+            <div className="responsive-2col" style={{
               display: 'grid',
               gridTemplateColumns: '1fr 1fr',
               gap: 8,

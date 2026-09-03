@@ -72,7 +72,7 @@ export default function AppDashboard() {
       </section>
 
       {/* ── SECTION 3: On-Chain Data (2 Columns) ── */}
-      <section style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px' }}>
+      <section className="responsive-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px' }}>
         
         {/* Transaction Logs */}
         <div className="neo-glass-panel" style={{ height: '600px', display: 'flex', flexDirection: 'column' }}>

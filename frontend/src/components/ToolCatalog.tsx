@@ -2,6 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Globe, Box } from 'lucide-react';
 import { getAgentIcon, getAgentColor, getAgentAvatar } from './AgentIcons';
 import { useI18n } from '@/lib/LanguageContext';
+<<<<<<< Updated upstream
+=======
+import { SETTLEMENT_SYMBOL } from '@/lib/userSession';
+import HireAgentButton from './HireAgentButton';
+>>>>>>> Stashed changes
 
 interface Tool {
   id: string;
@@ -31,7 +36,7 @@ export default function ToolCatalog() {
           category: t.category,
           description: t.description,
           price: t.price?.USDC ?? t.price?.STX ?? 0,
-          token: 'USDC',
+          token: SETTLEMENT_SYMBOL,
           canHireSubAgents: t.canHireSubAgents,
           reputation: t.reputation || 95,
           isExternal: t.isExternal,
@@ -70,7 +75,7 @@ export default function ToolCatalog() {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(min(280px, 100%), 1fr))',
           gap: 20,
         }}
         className="tool-grid-responsive"

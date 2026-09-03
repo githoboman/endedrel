@@ -293,7 +293,7 @@ await payment.waitForConfirmation(txId);
         </p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr', gap: 28 }}>
+      <div className="responsive-sidebar" style={{ display: 'grid', gridTemplateColumns: '280px 1fr', gap: 28 }}>
         {/* Sidebar */}
         <div style={{ position: 'sticky', top: 120, height: 'fit-content' }}>
           <div className="glass-panel" style={{ padding: 16 }}>

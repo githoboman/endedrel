@@ -101,7 +101,7 @@ export default function Home() {
 
       {/* ── Architecture Section ── */}
       <section style={{ marginTop: 80 }}>
-        <div style={{
+        <div className="responsive-2col" style={{
           display: 'grid',
           gridTemplateColumns: '1fr 1fr',
           gap: 40,
