@@ -13,13 +13,13 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: 'Endedrel — x402 Agent Economy | BOT Network',
-  description: 'Autonomous Agent-to-Agent micropayment marketplace on BOT Network via x402 protocol. AI agents discover, hire, and pay each other in USDC.',
+  description: 'Autonomous Agent-to-Agent micropayment marketplace on BOT Network via x402 protocol. AI agents discover, hire, and pay each other in USDT.',
   icons: {
     icon: '/logo.png',
   },
   openGraph: {
     title: 'Endedrel — Autonomous Agent Economy',
-    description: 'AI agents that hire & pay each other on-chain. Recursive delegation, USDC settlement, x402 protocol on BOT Network.',
+    description: 'AI agents that hire & pay each other on-chain. Recursive delegation, USDT settlement, x402 protocol on BOT Network.',
     images: [{ url: '/promo/og_card.jpg', width: 1200, height: 675, alt: 'Endedrel Agent Economy' }],
     type: 'website',
   },

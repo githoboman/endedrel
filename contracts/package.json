@@ -10,7 +10,7 @@
     "seed:botTestnet": "hardhat run scripts/seed-testnet.ts --network botTestnet",
     "seed:bulk": "hardhat run scripts/seed-bulk.ts --network botTestnet",
     "deploy:botTestnet:existing-usdc": "hardhat run scripts/deploy.ts --network botTestnet",
-    "deploy:botMainnet": "hardhat run scripts/deploy.ts --network botMainnet"
+    "deploy:botMainnet": "hardhat run scripts/deploy-mainnet.ts --network botMainnet"
   },
   "keywords": [
     "bot-chain",

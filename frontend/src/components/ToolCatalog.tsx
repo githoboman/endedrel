@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Globe, Box } from 'lucide-react';
 import { getAgentIcon, getAgentColor, getAgentAvatar } from './AgentIcons';
 import { useI18n } from '@/lib/LanguageContext';
+import HireAgentButton from './HireAgentButton';
 
 interface Tool {
   id: string;
@@ -14,6 +15,8 @@ interface Tool {
   reputation: number; // 0-100
   isExternal?: boolean;
   mcpCompatible?: boolean;
+  endpoint?: string;
+  onchainAddress?: string | null;
 }
 
 export default function ToolCatalog() {
@@ -35,7 +38,9 @@ export default function ToolCatalog() {
           canHireSubAgents: t.canHireSubAgents,
           reputation: t.reputation || 95,
           isExternal: t.isExternal,
-          mcpCompatible: t.mcpCompatible
+          mcpCompatible: t.mcpCompatible,
+          endpoint: t.endpoint,
+          onchainAddress: t.onchainAddress ?? null,
         }));
         setTools(formatted);
         setLoading(false);
@@ -53,7 +58,7 @@ export default function ToolCatalog() {
       marginTop: 24,
       padding: 24,
       border: 'var(--border-width) solid var(--border-strong)',
-      borderRadius: 'var(--radius-md)',
+      borderRadius: 'var(--radius-sm)',
       background: 'var(--bg-secondary)',
       boxShadow: 'var(--shadow-sm)'
     }}>
@@ -130,7 +135,7 @@ function AgentCard({ tool }: { tool: Tool }) {
             alt={tool.name}
             style={{
               width: 44, height: 44,
-              borderRadius: '50%',
+              borderRadius: 'var(--radius-sm)',
               objectFit: 'cover',
               border: `2px solid ${color}`,
               boxShadow: '2px 2px 0 0 rgba(0,0,0,0.1)',
@@ -143,7 +148,7 @@ function AgentCard({ tool }: { tool: Tool }) {
            </div>
         </div>
         <div className="mono" title="reputation" style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-tertiary)', display: 'flex', alignItems: 'center', gap: 4 }}>
-          <span style={{ width: 6, height: 6, borderRadius: '50%', background: tool.reputation >= 90 ? 'var(--success)' : tool.reputation >= 70 ? 'var(--btc)' : 'var(--text-tertiary)' }} />
+          <span style={{ width: 6, height: 6, borderRadius: 'var(--radius-sm)', background: tool.reputation >= 90 ? 'var(--success)' : tool.reputation >= 70 ? 'var(--btc)' : 'var(--text-tertiary)' }} />
           {tool.reputation}
         </div>
       </div>
@@ -192,6 +197,17 @@ function AgentCard({ tool }: { tool: Tool }) {
             {Number(tool.price) > 0 ? `${tool.price} ${tool.token}` : 'FREE'}
           </div>
       </div>
+
+      {!tool.isExternal && (
+        <HireAgentButton
+          agentId={tool.id}
+          name={tool.name}
+          endpoint={tool.endpoint}
+          onchainAddress={tool.onchainAddress}
+          category={tool.category}
+          price={Number(tool.price)}
+        />
+      )}
     </div>
   );
 }

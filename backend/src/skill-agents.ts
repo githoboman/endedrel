@@ -15,6 +15,7 @@
 
 import express, { Request, Response, NextFunction, Router } from 'express';
 import crypto from 'crypto';
+import { onchainReady, workerAddressForId, settleJob } from './onchain.js';
 
 // ── Public shapes (kept structurally identical to index.ts) ────────────────
 
@@ -353,7 +354,7 @@ export function buildSkillRouter(deps: SkillDeps): Router {
       category: agent.category,
     };
 
-    router.post(agent.endpoint, deps.createPaidRoute(priceConfig), (req: Request, res: Response) => {
+    router.post(agent.endpoint, deps.createPaidRoute(priceConfig), async (req: Request, res: Response) => {
       const paymentEntry = deps.logPayment(req, agent.endpoint, 'USDC', priceConfig, { workerName: agent.name });
       let result: Record<string, any>;
       try {
@@ -361,16 +362,33 @@ export function buildSkillRouter(deps: SkillDeps): Router {
       } catch (e: any) {
         result = { error: `Skill execution failed: ${e?.message || e}` };
       }
+
+      // On-chain settlement: if the client hired this agent on-chain and passed
+      // the confirmed jobId, release escrow by calling completeJob from the
+      // worker's key. The skill result is returned regardless of settlement.
+      let settlement: { txHash: string; explorerUrl: string } | null = null;
+      const rawJobId = req.body?.jobId ?? req.headers['x-job-id'];
+      if (!result.error && rawJobId != null && onchainReady()) {
+        try {
+          const s = await settleJob(agent.id, BigInt(String(rawJobId)));
+          if (s) settlement = { txHash: s.txHash, explorerUrl: s.explorerUrl };
+        } catch (e: any) {
+          console.warn(`[skill:${agent.id}] settlement failed for job ${rawJobId}: ${e?.message}`);
+        }
+      }
+
       const httpStatus = result.error ? 400 : 200;
       res.status(httpStatus).json({
         ...result,
         source: `${agent.name} Agent`,
         agentId: agent.id,
+        onchainAddress: workerAddressForId(agent.id),  // the address a user pays to hire this agent
+        settlement,                                     // completeJob tx, if escrow was released
         payment: paymentEntry ? {
-          transaction: paymentEntry.transaction,
+          transaction: settlement?.txHash || paymentEntry.transaction,
           token: paymentEntry.token,
           amount: paymentEntry.amount,
-          explorerUrl: paymentEntry.explorerUrl,
+          explorerUrl: settlement?.explorerUrl || paymentEntry.explorerUrl,
         } : null,
       });
     });
@@ -385,7 +403,10 @@ export function skillRegistryEntries(serverAddress: string) {
     id: a.id,
     name: a.name,
     description: a.description,
-    address: serverAddress,
+    // Real on-chain worker address (where the user's USDC is paid) when the
+    // on-chain bridge is configured; falls back to the server address otherwise.
+    address: workerAddressForId(a.id) || serverAddress,
+    onchainAddress: workerAddressForId(a.id) || null,
     endpoint: a.endpoint,
     category: a.category,
     priceSTX: a.priceUSDC,
@@ -416,5 +437,6 @@ export function skillToolEntries() {
     params: a.params,
     isExternal: false,
     isSkillAgent: true,
+    onchainAddress: workerAddressForId(a.id) || null,  // pay this address to hire
   }));
 }

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { AgentAvatarMap } from '@/components/AgentIcons';
+import { SETTLEMENT_SYMBOL } from '@/lib/userSession';
 
 const API = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4002').replace(/\/$/, '');
 
@@ -124,7 +125,7 @@ export default function EconomyGraph({ refreshTrigger = 0 }: { refreshTrigger?: 
           from: p.isA2A ? (p.payer || 'manager') : 'manager',
           to: p.endpoint ? agentIdFromEndpoint(p.endpoint) : 'unknown',
           amount: p.amount || '0',
-          token: p.token || 'USDC',
+          token: p.token || SETTLEMENT_SYMBOL,
           isA2A: p.isA2A || false,
           timestamp: p.timestamp || Date.now(),
           active: Date.now() - (p.timestamp || 0) < 10000,
@@ -196,33 +197,33 @@ export default function EconomyGraph({ refreshTrigger = 0 }: { refreshTrigger?: 
         // Glow
         if (isActive) {
           ctx.beginPath();
-          ctx.arc(node.x, node.y, radius + 8 + pulse, 0, Math.PI * 2);
+          ctx.rect(node.x - radius - 6 - pulse, node.y - radius - 6 - pulse, (radius + 6 + pulse)*2, (radius + 6 + pulse)*2);
           ctx.fillStyle = colors.glow;
           ctx.fill();
         }
 
-        // Circle
+        // Square
         ctx.beginPath();
-        ctx.arc(node.x, node.y, radius, 0, Math.PI * 2);
+        ctx.rect(node.x - radius, node.y - radius, radius*2, radius*2);
         ctx.fillStyle = colors.bg;
         ctx.strokeStyle = colors.border;
         ctx.lineWidth = 2;
         ctx.fill();
         ctx.stroke();
 
-        // Draw cartoon robot avatar inside circle (clipped)
+        // Draw cartoon robot avatar inside square (clipped)
         const avatarImg = imagesRef.current[node.id];
         if (avatarImg && avatarImg.complete && avatarImg.naturalWidth > 0) {
           ctx.save();
           ctx.beginPath();
-          ctx.arc(node.x, node.y, radius - 1, 0, Math.PI * 2);
+          ctx.rect(node.x - radius + 1, node.y - radius + 1, (radius - 1)*2, (radius - 1)*2);
           ctx.clip();
           const imgSize = (radius - 1) * 2;
           ctx.drawImage(avatarImg, node.x - radius + 1, node.y - radius + 1, imgSize, imgSize);
           ctx.restore();
           // Re-draw border on top of clipped image
           ctx.beginPath();
-          ctx.arc(node.x, node.y, radius, 0, Math.PI * 2);
+          ctx.rect(node.x - radius, node.y - radius, radius*2, radius*2);
           ctx.strokeStyle = colors.border;
           ctx.lineWidth = 2;
           ctx.stroke();
@@ -264,8 +265,8 @@ export default function EconomyGraph({ refreshTrigger = 0 }: { refreshTrigger?: 
           const px = fromNode.x + (toNode.x - fromNode.x) * t;
           const py = fromNode.y + (toNode.y - fromNode.y) * t;
           ctx.beginPath();
-          ctx.arc(px, py, 3, 0, Math.PI * 2);
-          ctx.fillStyle = activeEdge.isA2A ? '#a855f7' : '#06b6d4';
+          ctx.rect(px - 3, py - 3, 6, 6);
+          ctx.fillStyle = activeEdge.isA2A ? '#d946ef' : '#00f0ff'; // Neon pink and cyan
           ctx.fill();
         }
       }
@@ -287,7 +288,7 @@ export default function EconomyGraph({ refreshTrigger = 0 }: { refreshTrigger?: 
       }}>
         {[
           { label: 'Payments', value: stats.totalPayments, accent: 'var(--accent-500)' },
-          { label: 'Volume', value: `${stats.totalVolume}`, unit: 'USDC', accent: 'var(--btc)' },
+          { label: 'Volume', value: `${stats.totalVolume}`, unit: SETTLEMENT_SYMBOL, accent: 'var(--btc)' },
           { label: 'A2A Hires', value: stats.a2aCount, accent: 'var(--accent-500)' },
           { label: 'Agents', value: stats.activeAgents, accent: 'var(--success)' },
         ].map(s => (

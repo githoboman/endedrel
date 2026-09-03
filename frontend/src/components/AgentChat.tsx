@@ -7,6 +7,7 @@ import { A2ATopology } from './A2ATopology';
 import { getAgentIcon, getAgentColor } from './AgentIcons';
 import { useI18n } from '@/lib/LanguageContext';
 import { fmtCost } from '@/lib/format';
+import { SETTLEMENT_SYMBOL } from '@/lib/userSession';
 
 // ── Example queries surfaced in the empty state and quick-chip bar ──
 const EXAMPLE_QUERIES = [
@@ -144,7 +145,7 @@ const HiringDecisionMessage = ({
             : '1px solid var(--border-subtle)',
         boxShadow: isHire ? '0 2px 12px rgba(255,79,0,0.08)' : '0 1px 4px rgba(0,0,0,0.05)',
         color: 'var(--text-primary)',
-        borderRadius: 12,
+        borderRadius: 'var(--radius-sm)',
         fontSize: '0.9rem',
         lineHeight: 1.6,
       }}>
@@ -162,7 +163,7 @@ const HiringDecisionMessage = ({
                 padding: '4px 10px',
                 background: whyOpen ? 'rgba(255,79,0,0.12)' : 'rgba(255,79,0,0.06)',
                 border: '1px solid rgba(255,79,0,0.3)',
-                borderRadius: 20,
+                borderRadius: 'var(--radius-sm)',
                 cursor: 'pointer',
                 fontSize: '0.67rem',
                 fontFamily: 'var(--font-mono)',
@@ -182,7 +183,7 @@ const HiringDecisionMessage = ({
                 padding: '10px 14px',
                 background: 'var(--surface)',
                 border: '1px solid var(--border-subtle)',
-                borderRadius: 8,
+                borderRadius: 'var(--radius-sm)',
                 fontSize: '0.78rem',
                 color: 'var(--text-secondary)',
                 lineHeight: 1.6,
@@ -217,7 +218,7 @@ const HiringDecisionMessage = ({
             padding: 12,
             background: 'var(--surface)',
             border: '1px solid var(--border-subtle)',
-            borderRadius: 8,
+            borderRadius: 'var(--radius-sm)',
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
               <div className="brutal-text" style={{ fontSize: '0.65rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
@@ -361,7 +362,7 @@ export default function AgentChat({ onNewPayments, onProtocolTrace }: Params) {
           onProtocolTrace({ type: 'a2a-hire', ...data });
           setMessages(prev => [...prev, {
             role: 'system',
-            content: `🔄 **Recursive Hire:** ${data.hirer} hired **${data.worker}** for ${data.cost} USDC.`,
+            content: `🔄 **Recursive Hire:** ${data.hirer} hired **${data.worker}** for ${data.cost} ${SETTLEMENT_SYMBOL}.`,
             depth: data.depth || 1
           }]);
         } catch (e) { console.error('SSE A2A Error:', e); }
@@ -537,7 +538,7 @@ export default function AgentChat({ onNewPayments, onProtocolTrace }: Params) {
             <div style={{
               width: 60, height: 60,
               background: 'linear-gradient(135deg, var(--accent-500) 0%, #ff854b 100%)',
-              borderRadius: 14,
+              borderRadius: 'var(--radius-sm)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               boxShadow: '0 4px 20px rgba(255,79,0,0.22)',
               marginBottom: 14,
@@ -565,7 +566,7 @@ export default function AgentChat({ onNewPayments, onProtocolTrace }: Params) {
               marginBottom: 20,
             }}>
               Ask anything. Agents will autonomously plan, hire, and settle on-chain in{' '}
-              <strong style={{ color: 'var(--accent-500)' }}>USDC</strong>.
+              <strong style={{ color: 'var(--accent-500)' }}>{SETTLEMENT_SYMBOL}</strong>.
             </p>
 
             {/* 2-column chips grid */}
@@ -588,7 +589,7 @@ export default function AgentChat({ onNewPayments, onProtocolTrace }: Params) {
                       padding: '10px 12px',
                       background: 'var(--surface)',
                       border: '1px solid var(--border-subtle)',
-                      borderRadius: 8,
+                      borderRadius: 'var(--radius-sm)',
                       cursor: 'pointer',
                       textAlign: 'left',
                       transition: 'all 0.15s ease',
@@ -608,7 +609,7 @@ export default function AgentChat({ onNewPayments, onProtocolTrace }: Params) {
                     }}
                   >
                     <div style={{
-                      width: 24, height: 24, borderRadius: 6,
+                      width: 24, height: 24, borderRadius: 'var(--radius-sm)',
                       background: `${q.color}1a`,
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       flexShrink: 0, marginTop: 1,
@@ -681,7 +682,7 @@ export default function AgentChat({ onNewPayments, onProtocolTrace }: Params) {
               padding: '13px 20px',
               paddingRight: 60,
               fontSize: '0.92rem',
-              borderRadius: 12,
+              borderRadius: 'var(--radius-sm)',
               outline: 'none',
               boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
               transition: 'border-color 0.15s ease, box-shadow 0.15s ease',
@@ -711,7 +712,7 @@ export default function AgentChat({ onNewPayments, onProtocolTrace }: Params) {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              borderRadius: 8,
+              borderRadius: 'var(--radius-sm)',
               cursor: query.trim() && !isProcessing ? 'pointer' : 'default',
               boxShadow: query.trim() && !isProcessing ? '0 2px 10px rgba(255,79,0,0.35)' : 'none',
               transition: 'all 0.2s ease',
@@ -735,7 +736,7 @@ export default function AgentChat({ onNewPayments, onProtocolTrace }: Params) {
                     padding: '4px 10px',
                     background: 'var(--surface)',
                     border: '1px solid var(--border-subtle)',
-                    borderRadius: 20,
+                    borderRadius: 'var(--radius-sm)',
                     cursor: 'pointer',
                     fontSize: '0.67rem',
                     color: 'var(--text-secondary)',
