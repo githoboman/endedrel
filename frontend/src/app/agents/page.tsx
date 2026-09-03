@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Bot, Zap, Star, Activity, BarChart3, Filter } from 'lucide-react';
 import { useI18n } from '@/lib/LanguageContext';
+import { SETTLEMENT_SYMBOL } from '@/lib/userSession';
 import { getAgentAvatar } from '@/components/AgentIcons';
 
 export default function AgentsPage() {
@@ -228,7 +229,7 @@ export default function AgentsPage() {
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: '0.7rem', color: '#71717a', marginBottom: 4 }}>{t.price.toUpperCase()}</div>
                 <div className="mono" style={{ fontSize: '1.1rem', fontWeight: 800, color: '#ffffff' }}>
-                  {agent.priceUSDC ?? agent.priceSTX} USDC
+                  {agent.priceUSDC ?? agent.priceSTX} {SETTLEMENT_SYMBOL}
                 </div>
               </div>
             </div>

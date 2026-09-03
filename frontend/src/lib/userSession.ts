@@ -13,7 +13,9 @@
  */
 import { defineChain } from 'viem';
 
-const NETWORK = (process.env.NEXT_PUBLIC_BOT_NETWORK || 'testnet') as 'testnet' | 'mainnet';
+// Mainnet is the default: the production deployment lives on BOT Chain mainnet.
+// Set NEXT_PUBLIC_BOT_NETWORK=testnet explicitly for local/testnet work.
+const NETWORK = (process.env.NEXT_PUBLIC_BOT_NETWORK || 'mainnet') as 'testnet' | 'mainnet';
 
 export const botTestnet = defineChain({
   id: 968,
@@ -37,6 +39,20 @@ export const botMainnet = defineChain({
 });
 
 export const activeChain = NETWORK === 'mainnet' ? botMainnet : botTestnet;
+
+/** True when pointing at BOT Chain mainnet (real value). */
+export const isMainnet = NETWORK === 'mainnet';
+
+/**
+ * Settlement token symbol for the active network. Mainnet settles in USDT —
+ * the canonical stablecoin on BOT Chain (no official USDC exists there); the
+ * testnet deployment uses a mock token labelled USDC. Import this instead of
+ * hardcoding a symbol so the UI can never claim the wrong asset.
+ */
+export const SETTLEMENT_SYMBOL = isMainnet ? 'USDT' : 'USDC';
+
+/** Short network label for badges, e.g. "Mainnet" / "Testnet". */
+export const NETWORK_LABEL = isMainnet ? 'Mainnet' : 'Testnet';
 
 type Eip1193Provider = {
   request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;

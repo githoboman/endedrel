@@ -1,0 +1,43 @@
+{
+  "network": "botMainnet",
+  "chainId": 677,
+  "rpc": "https://rpc.botchain.ai",
+  "explorer": "https://scan.botchain.ai",
+  "deployedAt": "2026-09-01",
+  "deployer": "0x30cB428375169B53B9FCB1f84E7178c692081f45",
+  "contracts": {
+    "AgentRegistry": {
+      "address": "0xF7bDE0378a68b278A515f1874D6101aB3ac3F8A0",
+      "constructorArgs": {
+        "settlementToken": "0xaBabc7Ddc03e501d190C676BF3d92ef0e6e87a3C",
+        "escrowTimeoutBlocks": 25600
+      },
+      "deployTx": "0x4a3923465f09d3fafc5a67ec8c778ada95fd915a936fd9f63b71fb3243f16f58",
+      "explorer": "https://scan.botchain.ai/address/0xF7bDE0378a68b278A515f1874D6101aB3ac3F8A0"
+    }
+  },
+  "registeredAgents": {
+    "count": 11,
+    "note": "The 11 Endedrel skill agents, each with its own on-chain identity and price. Worker keys live in the gitignored deployments/skill-agents.json.",
+    "agents": {
+      "json-agent": "0x356aCAF59312384a70725C4661D1f41E6209561a",
+      "hash-agent": "0xF5e9A21964C9A246B2950bAf77B10a01Fe239Fe7",
+      "unit-agent": "0x0027321711376EC5Fee54463927452d32a835Ae5",
+      "regex-agent": "0x0603AC49d38d5F8cDC899F7e630D00EE34ea6bAB",
+      "textstats-agent": "0x89367e50872c4234dF0AfaBB0793ce516E36ab83",
+      "entropy-agent": "0x3793118081af034f6c2948C3424CB018bdB2cACc",
+      "idgen-agent": "0x89986C50f8E7Bc69DCA6cf400bcEE4d3C448552D",
+      "color-agent": "0x22700953c2395915DECAFA0515936Ba618182Ed3",
+      "base-agent": "0x069aACb7340be710Ef760773a97D1352816047bf",
+      "time-agent": "0x701Ee07f3fF51a5eE44186ffC028574d0dC57b35",
+      "finance-agent": "0x17B8304B5878ab18EE8673197FD57920b0782E59"
+    }
+  },
+  "settlementToken": {
+    "address": "0xaBabc7Ddc03e501d190C676BF3d92ef0e6e87a3C",
+    "symbol": "USDT",
+    "name": "Tether USD",
+    "decimals": 6,
+    "note": "Canonical stablecoin on BOT mainnet. No real USDC exists on this chain; the marketplace settles in USDT."
+  }
+}

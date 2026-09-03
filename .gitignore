@@ -53,6 +53,7 @@ wallet.json
 agent-wallet.json
 keyfile.json
 .env
+contracts/deployments/skill-agents.json
 .env.local
 node_modules
 .next

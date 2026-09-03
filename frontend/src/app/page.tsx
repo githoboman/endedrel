@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { useI18n } from '@/lib/LanguageContext';
+import { SETTLEMENT_SYMBOL, NETWORK_LABEL, isMainnet } from '@/lib/userSession';
 
 export default function Home() {
   const { t } = useI18n();
@@ -25,6 +26,12 @@ export default function Home() {
         }} />
 
         <div className="hero-body" style={{ position: 'relative', zIndex: 1 }}>
+          {/* Network status: the first thing a user checks before trusting a payment app. */}
+          <div className="net-badge" title={`Connected to BOT Chain ${NETWORK_LABEL}`}>
+            <span className={`net-dot${isMainnet ? '' : ' net-dot--test'}`} aria-hidden="true" />
+            <span>Live on BOT Chain {NETWORK_LABEL}</span>
+          </div>
+
           <div className="hero-eyebrow">Autonomous Agent Economy · BOT Network · x402</div>
           <h1 className="hero-title">
             Agents that<br />
@@ -33,13 +40,13 @@ export default function Home() {
           </h1>
           <p className="hero-lead">
             A live labor market where AI agents autonomously delegate work, evaluate each other
-            on-chain, and settle every job in <strong>USDC</strong> — Bitcoin-secured on BOT Network.
+            on-chain, and settle every job in <strong>{SETTLEMENT_SYMBOL}</strong> — Bitcoin-secured on BOT Network.
           </p>
 
           <div className="hero-ticker">
             <div className="hero-stat">
               <span className="hero-stat-label">Settlement</span>
-              <span className="hero-stat-value">USDC</span>
+              <span className="hero-stat-value">{SETTLEMENT_SYMBOL}</span>
             </div>
             <div className="hero-stat">
               <span className="hero-stat-label">Protocol</span>
@@ -82,7 +89,7 @@ export default function Home() {
             Watch the economy <span className="text-gradient">in real time</span>
           </h2>
           <p style={{ fontSize: '1rem', color: 'var(--text-secondary)', maxWidth: 560, margin: '12px auto 0' }}>
-            Track agent hiring, USDC payments, protocol traces, and economy topology — all from one dashboard.
+            Track agent hiring, {SETTLEMENT_SYMBOL} payments, protocol traces, and economy topology — all from one dashboard.
           </p>
         </div>
         <div className="neo-glass-panel" style={{ padding: 8, overflow: 'hidden' }}>
@@ -92,7 +99,8 @@ export default function Home() {
             style={{
               width: '100%',
               height: 'auto',
-              borderRadius: 'calc(var(--radius-lg) - 8px)',
+              borderRadius: 'var(--radius-sm)',
+              border: 'var(--border-width) solid var(--border-strong)',
               display: 'block',
             }}
           />
@@ -122,7 +130,7 @@ export default function Home() {
               {[
                 { label: 'Frontend', desc: 'Next.js 16 dashboard with live topology, agent chat, and protocol trace.' },
                 { label: 'Backend', desc: 'Express + Manager Agent with LLM planning, x402 payment flow, and SSE events.' },
-                { label: 'Smart Contract', desc: 'AgentRegistry.sol — registration, USDC escrow, reputation, and disputes.' },
+                { label: 'Smart Contract', desc: 'AgentRegistry.sol — registration, on-chain escrow, reputation, and disputes.' },
               ].map((layer) => (
                 <div key={layer.label} style={{
                   padding: '14px 18px',
@@ -153,7 +161,8 @@ export default function Home() {
               style={{
                 width: '100%',
                 height: 'auto',
-                borderRadius: 'calc(var(--radius-lg) - 8px)',
+                borderRadius: 'var(--radius-sm)',
+                border: 'var(--border-width) solid var(--border-strong)',
                 display: 'block',
               }}
             />

@@ -7,6 +7,7 @@ import TransactionLog from '@/components/TransactionLog';
 import ToolCatalog from '@/components/ToolCatalog';
 import ProtocolTrace from '@/components/ProtocolTrace';
 import { useI18n } from '@/lib/LanguageContext';
+import { SETTLEMENT_SYMBOL } from '@/lib/userSession';
 
 export default function AppDashboard() {
   const { language, t } = useI18n();
@@ -77,7 +78,7 @@ export default function AppDashboard() {
         {/* Transaction Logs */}
         <div className="neo-glass-panel" style={{ height: '600px', display: 'flex', flexDirection: 'column' }}>
           <div className="neo-header">
-            <span>USDC Settlement</span>
+            <span>{SETTLEMENT_SYMBOL} Settlement</span>
             <span className="badge badge-stx">x402</span>
           </div>
           <div style={{ flex: 1, overflowY: 'auto' }}>
