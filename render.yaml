@@ -1,0 +1,51 @@
+# Render blueprint — Endedrel backend (agent API + x402 + on-chain settlement).
+#
+# Secrets are NOT stored here. Set these in the Render dashboard:
+#   SKILL_AGENTS_JSON  — contents of contracts/deployments/skill-agents.json
+#                        (worker private keys; needed for completeJob)
+#   NVIDIA_API_KEY     — optional, upgrades the LLM-backed agents
+#
+# The frontend (Vercel) points at this service via NEXT_PUBLIC_API_URL.
+services:
+  - type: web
+    name: endedrel-backend
+    runtime: node
+    plan: free
+    region: oregon
+    rootDir: backend
+    buildCommand: npm install
+    # tsx is a runtime dependency, so the TypeScript entrypoint runs directly.
+    startCommand: npm start
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      # Render injects PORT; the server already reads it.
+      - key: CORS_ORIGIN
+        value: https://endedrel.top
+
+      # ── BOT Chain mainnet ──
+      - key: BOT_NETWORK
+        value: mainnet
+      - key: BOT_MAINNET_RPC
+        value: https://rpc.botchain.ai
+      - key: AGENT_REGISTRY_ADDRESS
+        value: "0xF7bDE0378a68b278A515f1874D6101aB3ac3F8A0"
+      - key: USDC_ADDRESS
+        value: "0xaBabc7Ddc03e501d190C676BF3d92ef0e6e87a3C"
+
+      # No BOT merchant credentials yet: payment gating simulates, while real
+      # on-chain job settlement still runs through the worker keys.
+      - key: SIMULATION_MODE
+        value: "true"
+
+      # ── Secrets: set in the dashboard, never committed ──
+      - key: SKILL_AGENTS_JSON
+        sync: false
+      - key: NVIDIA_API_KEY
+        sync: false
+      - key: NVIDIA_MODEL
+        value: nvidia/nemotron-3.5-lightning-30b-a3b

@@ -57,6 +57,26 @@ async function main() {
     await (await usdt.approve(REGISTRY, ethers.MaxUint256)).wait();
   }
 
+  // Workers pay their own gas for completeJob (the contract requires the
+  // worker to be msg.sender), so top up any that can't afford a settlement.
+  // Without this the hire succeeds and the escrow is left stranded.
+  const perSettlement = ethers.parseEther("0.0008");
+  const workerFloor = perSettlement * BigInt(ROUNDS + 1);
+  console.log(`Topping up worker gas (floor ${ethers.formatEther(workerFloor)} BOT each)…`);
+  for (const [id, w] of Object.entries(map.agents)) {
+    const bal = await provider.getBalance(w.address);
+    if (bal < workerFloor) {
+      const need = workerFloor - bal;
+      try {
+        await (await requester.sendTransaction({ to: w.address, value: need })).wait();
+        console.log(`  + ${id.padEnd(17)} ${ethers.formatEther(need)} BOT`);
+      } catch (e: any) {
+        console.log(`  ! ${id}: top-up failed — ${(e?.shortMessage || e?.message || '').slice(0, 60)}`);
+      }
+    }
+  }
+  console.log();
+
   const entries = Object.entries(map.agents);
   let hires = 0, settled = 0;
 

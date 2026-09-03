@@ -65,17 +65,41 @@ let bridgeReady = false;
 
 function loadMapping() {
   try {
-    const p = path.join(process.cwd(), '..', 'contracts', 'deployments', 'skill-agents.json');
-    const alt = path.join(process.cwd(), 'contracts', 'deployments', 'skill-agents.json');
-    const file = fs.existsSync(p) ? p : (fs.existsSync(alt) ? alt : null);
-    if (!file) { console.warn('[onchain] skill-agents.json not found — on-chain settlement disabled.'); return; }
-    const data = JSON.parse(fs.readFileSync(file, 'utf8')) as { agents: Record<string, WorkerEntry> };
+    // Source order: SKILL_AGENTS_JSON env (how hosted deployments supply the
+    // keys, since the file is gitignored and never ships), then the local
+    // file written by contracts/scripts/register-skill-agents.ts.
+    let raw: string | null = null;
+    let origin = '';
+
+    if (process.env.SKILL_AGENTS_JSON) {
+      raw = process.env.SKILL_AGENTS_JSON;
+      origin = 'SKILL_AGENTS_JSON env';
+    } else {
+      const p = path.join(process.cwd(), '..', 'contracts', 'deployments', 'skill-agents.json');
+      const alt = path.join(process.cwd(), 'contracts', 'deployments', 'skill-agents.json');
+      const file = fs.existsSync(p) ? p : (fs.existsSync(alt) ? alt : null);
+      if (file) { raw = fs.readFileSync(file, 'utf8'); origin = file; }
+    }
+
+    if (!raw) {
+      console.warn('[onchain] No worker mapping (set SKILL_AGENTS_JSON or provide skill-agents.json) — on-chain settlement disabled.');
+      return;
+    }
+
+    const data = JSON.parse(raw) as { registry?: string; agents: Record<string, WorkerEntry> };
+
+    // Guard: keys registered against a different registry cannot settle here.
+    if (data.registry && REGISTRY_ADDRESS && data.registry.toLowerCase() !== REGISTRY_ADDRESS.toLowerCase()) {
+      console.warn(`[onchain] Worker mapping is for registry ${data.registry} but AGENT_REGISTRY_ADDRESS is ${REGISTRY_ADDRESS} — settlement disabled.`);
+      return;
+    }
+
     for (const [id, w] of Object.entries(data.agents)) {
       workersById.set(id, w);
       workersByEndpoint.set(w.endpoint, w);
     }
     bridgeReady = !!REGISTRY_ADDRESS && workersById.size > 0;
-    console.log(`[onchain] Loaded ${workersById.size} worker agents. On-chain settlement ${bridgeReady ? 'ENABLED' : 'disabled'}.`);
+    console.log(`[onchain] Loaded ${workersById.size} worker agents from ${origin}. On-chain settlement ${bridgeReady ? 'ENABLED' : 'disabled'}.`);
   } catch (e: any) {
     console.warn(`[onchain] Failed to load worker mapping: ${e?.message}. Settlement disabled.`);
   }
