@@ -41,6 +41,31 @@ const botChain = defineChain({
   blockExplorers: { default: { name: 'BOTScan', url: EXPLORER } },
 });
 
+const goatMainnet = defineChain({
+  id: 2345,
+  name: 'GOAT Network',
+  nativeCurrency: { name: 'BTC', symbol: 'BTC', decimals: 18 },
+  rpcUrls: { default: { http: [process.env.GOAT_MAINNET_RPC || 'https://rpc.goat.network'] } },
+  blockExplorers: { default: { name: 'GOATScan', url: 'https://explorer.goat.network' } },
+});
+
+const goatTestnet = defineChain({
+  id: 248, // PLACEHOLDER for Testnet3
+  name: 'GOAT Network Testnet',
+  nativeCurrency: { name: 'BTC', symbol: 'BTC', decimals: 18 },
+  rpcUrls: { default: { http: [process.env.GOAT_TESTNET_RPC || 'https://rpc.testnet.goat.network'] } },
+  blockExplorers: { default: { name: 'GOATScan', url: 'https://explorer.testnet.goat.network' } },
+});
+
+const supportedChains = [botChain, goatMainnet, goatTestnet];
+
+function getChainConfig(chainId?: number) {
+  if (!chainId) return { chain: botChain, rpcUrl: RPC_URL, explorer: EXPLORER };
+  const chain = supportedChains.find(c => c.id === chainId);
+  if (!chain) return { chain: botChain, rpcUrl: RPC_URL, explorer: EXPLORER };
+  return { chain, rpcUrl: chain.rpcUrls.default.http[0], explorer: chain.blockExplorers?.default.url || EXPLORER };
+}
+
 const REGISTRY_ADDRESS = (process.env.AGENT_REGISTRY_ADDRESS || '') as Address;
 
 const REGISTRY_ABI = [
@@ -107,6 +132,7 @@ function loadMapping() {
 loadMapping();
 
 const publicClient = createPublicClient({ chain: botChain, transport: http(RPC_URL) });
+// For multichain support, clients can be created dynamically based on the chainId.
 
 // ── Public API ──────────────────────────────────────────────────────────────
 
@@ -131,14 +157,17 @@ export function skillAgentOnchainDirectory(): Array<{ id: string; address: Addre
  * own key (the contract requires msg.sender == job.worker). Idempotent-ish:
  * returns null if already settled or not applicable.
  */
-export async function settleJob(agentId: string, jobId: bigint): Promise<{ txHash: Hash; explorerUrl: string } | null> {
+export async function settleJob(agentId: string, jobId: bigint, chainId?: number): Promise<{ txHash: Hash; explorerUrl: string } | null> {
   if (!bridgeReady) return null;
   const worker = workersById.get(agentId);
   if (!worker) return null;
 
+  const { chain, rpcUrl, explorer } = getChainConfig(chainId);
+  const dynamicPublicClient = createPublicClient({ chain, transport: http(rpcUrl) });
+
   // Confirm the job exists, is for this worker, and is still pending.
   try {
-    const job = await publicClient.readContract({
+    const job = await dynamicPublicClient.readContract({
       address: REGISTRY_ADDRESS, abi: REGISTRY_ABI, functionName: 'getJob', args: [jobId],
     }) as { worker: Address; exists: boolean; status: string };
     if (!job.exists) return null;
@@ -148,10 +177,10 @@ export async function settleJob(agentId: string, jobId: bigint): Promise<{ txHas
   }
 
   const account = privateKeyToAccount(worker.privateKey);
-  const wallet = createWalletClient({ account, chain: botChain, transport: http(RPC_URL) });
+  const wallet = createWalletClient({ account, chain, transport: http(rpcUrl) });
   const txHash = await wallet.writeContract({
     address: REGISTRY_ADDRESS, abi: REGISTRY_ABI, functionName: 'completeJob', args: [jobId],
   });
-  await publicClient.waitForTransactionReceipt({ hash: txHash });
-  return { txHash, explorerUrl: `${EXPLORER}/tx/${txHash}` };
+  await dynamicPublicClient.waitForTransactionReceipt({ hash: txHash });
+  return { txHash, explorerUrl: `${explorer}/tx/${txHash}` };
 }

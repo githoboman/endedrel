@@ -2,7 +2,7 @@
 pragma solidity ^0.8.24;
 
 /**
- * Minimal ERC-20 for local testing only — stands in for GOAT USDC (6 decimals).
+ * Minimal ERC-20 for local testing only — stands in for BOT Chain USDC (6 decimals).
  * Not for production; no access control on mint.
  */
 contract MockUSDC {

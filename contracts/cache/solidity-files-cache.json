@@ -2,8 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "C:\\Users\\OWNER\\Desktop\\endedrel\\contracts\\src\\AgentRegistry.sol": {
-      "lastModificationDate": 1784302468561,
-      "contentHash": "004d077f93feef5f81ece2b487aa60f3",
+      "lastModificationDate": 1789789848829,
+      "contentHash": "2b7bd9f79334043800a9d567f31f29c1",
       "sourceName": "src/AgentRegistry.sol",
       "solcConfig": {
         "version": "0.8.24",
@@ -39,8 +39,8 @@
       ]
     },
     "C:\\Users\\OWNER\\Desktop\\endedrel\\contracts\\src\\MockUSDC.sol": {
-      "lastModificationDate": 1784336619354,
-      "contentHash": "068315900ede31559f17ba03cb8b4e78",
+      "lastModificationDate": 1789789848645,
+      "contentHash": "2225ed2d5b90375aebdb214e461e9ac1",
       "sourceName": "src/MockUSDC.sol",
       "solcConfig": {
         "version": "0.8.24",

@@ -18,7 +18,12 @@
   ],
   "license": "MIT",
   "dependencies": {
+    "@goatnetwork/agentkit": "^0.2.3",
     "@google/generative-ai": "^0.24.1",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/morgan": "^1.9.9",
+    "@types/node": "^22.0.0",
     "axios": "^1.13.5",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
@@ -26,12 +31,9 @@
     "groq-sdk": "^0.37.0",
     "helmet": "^8.0.0",
     "morgan": "^1.10.0",
-    "@types/cors": "^2.8.17",
-    "@types/express": "^5.0.0",
-    "@types/morgan": "^1.9.9",
-    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
     "typescript": "^5.7.0",
-    "tsx": "^4.19.0"
+    "viem": "^2.56.8"
   },
   "engines": {
     "node": ">=18.0.0"

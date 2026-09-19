@@ -14,7 +14,7 @@
 import React, { useState } from 'react';
 import { hireAgent } from '@/lib/payments';
 import {
-  authenticate, getConnectedAddress, isWalletAvailable, SETTLEMENT_SYMBOL,
+  authenticate, getConnectedAddress, isWalletAvailable, SETTLEMENT_SYMBOL, getConnectedChainId,
 } from '@/lib/userSession';
 import type { Address } from 'viem';
 
@@ -76,11 +76,12 @@ export default function HireAgentButton({
       const hire = await hireAgent({ owner, worker: onchainAddress as Address, category });
 
       // 3. Call the agent's skill endpoint with the confirmed jobId.
+      const chainId = await getConnectedChainId();
       setPhase('working'); setMsg(`Job #${hire.jobId} escrowed — agent is working…`);
       const resp = await fetch(`${API}${endpoint}`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ ...sampleInput(endpoint!), jobId: hire.jobId.toString() }),
+        body: JSON.stringify({ ...sampleInput(endpoint!), jobId: hire.jobId.toString(), chainId: chainId?.toString() }),
       });
       const body = await resp.json();
       if (!resp.ok) throw new Error(body?.error || `Agent returned HTTP ${resp.status}`);

@@ -5,7 +5,7 @@ pragma solidity ^0.8.24;
  * ═══════════════════════════════════════════════════════════════════════════
  *  Endedrel Agent Registry
  * ═══════════════════════════════════════════════════════════════════════════
- *  A decentralized marketplace for autonomous AI agents on GOAT Network
+ *  A decentralized marketplace for autonomous AI agents on BOT Chain
  *  (Bitcoin-secured, EVM-compatible L2). Implements reputation, recursive
  *  hiring, on-chain USDC escrow settlement, and dynamic pricing for
  *  agent-to-agent (A2A) commerce.
@@ -31,13 +31,13 @@ contract AgentRegistry {
     uint256 public constant REPUTABLE_THRESHOLD = 7000;     // 70.00
 
     // Escrow timeout. The Clarity version used 144 Stacks blocks (~24h at
-    // ~10 min/block). GOAT block time differs, so this is expressed as an
+    // ~10 min/block). BOT Chain block time differs, so this is expressed as an
     // owner-tunable block count rather than silently reusing 144.
     uint256 public escrowTimeoutBlocks;
 
     // ── Ownership & token ────────────────────────────────────────────────────
     address public immutable contractOwner;
-    IERC20 public immutable settlementToken; // USDC on GOAT (6 decimals)
+    IERC20 public immutable settlementToken; // USDC on BOT Chain (6 decimals)
 
     // ── Errors (mirror Clarity err-codes) ────────────────────────────────────
     error OwnerOnly();              // u100

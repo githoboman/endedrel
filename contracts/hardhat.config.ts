@@ -34,6 +34,16 @@ const config: HardhatUserConfig = {
       chainId: 677,
       accounts: DEPLOYER_PRIVATE_KEY ? [DEPLOYER_PRIVATE_KEY] : [],
     },
+    goatTestnet: {
+      url: process.env.GOAT_TESTNET_RPC || "https://rpc.testnet.goat.network",
+      chainId: 248,
+      accounts: DEPLOYER_PRIVATE_KEY ? [DEPLOYER_PRIVATE_KEY] : [],
+    },
+    goatMainnet: {
+      url: process.env.GOAT_MAINNET_RPC || "https://rpc.goat.network",
+      chainId: 2345,
+      accounts: DEPLOYER_PRIVATE_KEY ? [DEPLOYER_PRIVATE_KEY] : [],
+    },
   },
   // Blockscout explorers (no API key required for verification).
   etherscan: {

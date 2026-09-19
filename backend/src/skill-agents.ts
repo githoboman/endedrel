@@ -17,6 +17,10 @@ import express, { Request, Response, NextFunction, Router } from 'express';
 import crypto from 'crypto';
 import { onchainReady, workerAddressForId, settleJob } from './onchain.js';
 
+import { ActionProvider } from '@goatnetwork/agentkit/providers';
+import { PolicyEngine, ExecutionRuntime } from '@goatnetwork/agentkit/core';
+import { walletBalanceAction, NoopWalletReadAdapter } from '@goatnetwork/agentkit/plugins';
+
 // ── Public shapes (kept structurally identical to index.ts) ────────────────
 
 export interface SkillAgentMeta {
@@ -32,7 +36,7 @@ export interface SkillAgentMeta {
 }
 
 /** A skill fn takes the request body and returns a JSON-serializable result. */
-type SkillFn = (body: any) => Record<string, any>;
+type SkillFn = (body: any) => Record<string, any> | Promise<Record<string, any>>;
 
 interface SkillAgentDef extends SkillAgentMeta {
   run: SkillFn;
@@ -321,6 +325,36 @@ function financeSkill(body: any) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// AgentKit Integration
+// ═══════════════════════════════════════════════════════════════════════════
+
+const akProvider = new ActionProvider();
+akProvider.register(walletBalanceAction(new NoopWalletReadAdapter()));
+
+const akPolicy = new PolicyEngine({
+  allowedNetworks: ['goat-testnet'],
+  maxRiskWithoutConfirm: 'low',
+  writeEnabled: true,
+});
+
+const akRuntime = new ExecutionRuntime(akPolicy, { maxRetries: 2, retryDelayMs: 200 });
+
+async function onchainSkill(body: any) {
+  const address = body.address || '0x000000000000000000000000000000000000dEaD';
+  const context = { traceId: `trace_${Date.now()}`, network: 'goat-testnet', now: Date.now(), caller: 'onchain-agent' };
+  try {
+    const result = await akRuntime.run(
+      akProvider.get('wallet.balance'),
+      context,
+      { address }
+    );
+    return { success: true, result, network: 'goat-testnet' };
+  } catch (err: any) {
+    return { error: err.message || 'Execution failed' };
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // Agent catalogue
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -336,6 +370,7 @@ export const SKILL_AGENTS: SkillAgentDef[] = [
   { id: 'base-agent', name: 'RadixShift', description: 'Converts numbers between binary, octal, decimal, hex, and any base 2-36.', endpoint: '/api/skill/base-convert', category: 'compute', priceUSDC: 0.001, reputation: 92, jobsCompleted: 301, params: { value: 'string (required)', fromBase: 'number (optional, default 10)' }, run: baseConvertSkill },
   { id: 'time-agent', name: 'ChronoSync', description: 'Parses and converts timestamps across ISO-8601, Unix, UTC, and relative formats.', endpoint: '/api/skill/time', category: 'data', priceUSDC: 0.001, reputation: 88, jobsCompleted: 199, params: { timestamp: 'string|number (optional, default now)' }, run: timeSkill },
   { id: 'finance-agent', name: 'FinCalc Advisor', description: 'Computes compound-interest growth and loan amortization payments.', endpoint: '/api/skill/finance', category: 'finance', priceUSDC: 0.004, reputation: 93, jobsCompleted: 187, params: { principal: 'number (required)', annualRatePct: 'number (required)', years: 'number (required)' }, run: financeSkill },
+  { id: 'onchain-agent', name: 'OnChain Explorer', description: 'Uses AgentKit to read on-chain data securely over the GOAT Network.', endpoint: '/api/skill/onchain', category: 'data', priceUSDC: 0.01, reputation: 99, jobsCompleted: 102, params: { address: 'string (required)' }, run: onchainSkill },
 ];
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -358,7 +393,7 @@ export function buildSkillRouter(deps: SkillDeps): Router {
       const paymentEntry = deps.logPayment(req, agent.endpoint, 'USDC', priceConfig, { workerName: agent.name });
       let result: Record<string, any>;
       try {
-        result = agent.run(req.body || {});
+        result = await agent.run(req.body || {});
       } catch (e: any) {
         result = { error: `Skill execution failed: ${e?.message || e}` };
       }
@@ -368,12 +403,15 @@ export function buildSkillRouter(deps: SkillDeps): Router {
       // worker's key. The skill result is returned regardless of settlement.
       let settlement: { txHash: string; explorerUrl: string } | null = null;
       const rawJobId = req.body?.jobId ?? req.headers['x-job-id'];
+      const rawChainId = req.body?.chainId ?? req.headers['x-chain-id'];
+      const chainId = rawChainId ? Number(rawChainId) : undefined;
+      
       if (!result.error && rawJobId != null && onchainReady()) {
         try {
-          const s = await settleJob(agent.id, BigInt(String(rawJobId)));
+          const s = await settleJob(agent.id, BigInt(String(rawJobId)), chainId);
           if (s) settlement = { txHash: s.txHash, explorerUrl: s.explorerUrl };
         } catch (e: any) {
-          console.warn(`[skill:${agent.id}] settlement failed for job ${rawJobId}: ${e?.message}`);
+          console.warn(`[skill:${agent.id}] settlement failed for job ${rawJobId} on chain ${chainId}: ${e?.message}`);
         }
       }
 

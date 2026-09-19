@@ -38,7 +38,29 @@ export const botMainnet = defineChain({
   },
 });
 
-export const activeChain = NETWORK === 'mainnet' ? botMainnet : botTestnet;
+export const goatTestnet = defineChain({
+  id: 248, // PLACEHOLDER for Testnet3
+  name: 'GOAT Network Testnet',
+  nativeCurrency: { name: 'BTC', symbol: 'BTC', decimals: 18 },
+  rpcUrls: { default: { http: ['https://rpc.testnet.goat.network'] } },
+  blockExplorers: {
+    default: { name: 'GOATScan', url: 'https://explorer.testnet.goat.network' },
+  },
+  testnet: true,
+});
+
+export const goatMainnet = defineChain({
+  id: 2345,
+  name: 'GOAT Network',
+  nativeCurrency: { name: 'BTC', symbol: 'BTC', decimals: 18 },
+  rpcUrls: { default: { http: ['https://rpc.goat.network'] } },
+  blockExplorers: {
+    default: { name: 'GOATScan', url: 'https://explorer.goat.network' },
+  },
+});
+
+export const supportedChains = [botMainnet, botTestnet, goatTestnet];
+export const defaultChain = NETWORK === 'mainnet' ? botMainnet : botTestnet;
 
 /** True when pointing at BOT Chain mainnet (real value). */
 export const isMainnet = NETWORK === 'mainnet';
@@ -71,9 +93,25 @@ export function isWalletAvailable(): boolean {
 
 const toHexChainId = (id: number) => `0x${id.toString(16)}`;
 
-/** Ensure the wallet is on the active BOT chain; add it if unknown. */
-async function ensureBotChain(provider: Eip1193Provider): Promise<void> {
-  const hexId = toHexChainId(activeChain.id);
+export async function getConnectedChainId(): Promise<number | null> {
+  const provider = getProvider();
+  if (!provider) return null;
+  try {
+    const chainIdHex = (await provider.request({ method: 'eth_chainId' })) as string;
+    return parseInt(chainIdHex, 16);
+  } catch {
+    return null;
+  }
+}
+
+/** Ensure the wallet is on a supported chain; switch to default if unknown. */
+async function ensureSupportedChain(provider: Eip1193Provider): Promise<void> {
+  const currentId = await getConnectedChainId();
+  if (currentId && supportedChains.some((c) => c.id === currentId)) {
+    return; // Already on a supported chain
+  }
+  
+  const hexId = toHexChainId(defaultChain.id);
   try {
     await provider.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: hexId }] });
   } catch (err: unknown) {
@@ -83,10 +121,10 @@ async function ensureBotChain(provider: Eip1193Provider): Promise<void> {
         method: 'wallet_addEthereumChain',
         params: [{
           chainId: hexId,
-          chainName: activeChain.name,
-          nativeCurrency: activeChain.nativeCurrency,
-          rpcUrls: activeChain.rpcUrls.default.http,
-          blockExplorerUrls: [activeChain.blockExplorers!.default.url],
+          chainName: defaultChain.name,
+          nativeCurrency: defaultChain.nativeCurrency,
+          rpcUrls: defaultChain.rpcUrls.default.http,
+          blockExplorerUrls: [defaultChain.blockExplorers!.default.url],
         }],
       });
     } else {
@@ -95,7 +133,34 @@ async function ensureBotChain(provider: Eip1193Provider): Promise<void> {
   }
 }
 
-/** Prompt connection, switch to BOT, return the connected address. */
+export async function switchNetwork(chainId: number): Promise<void> {
+  const provider = getProvider();
+  if (!provider) return;
+  const targetChain = supportedChains.find(c => c.id === chainId);
+  if (!targetChain) return;
+
+  const hexId = toHexChainId(targetChain.id);
+  try {
+    await provider.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: hexId }] });
+  } catch (err: unknown) {
+    if ((err as { code?: number })?.code === 4902) {
+      await provider.request({
+        method: 'wallet_addEthereumChain',
+        params: [{
+          chainId: hexId,
+          chainName: targetChain.name,
+          nativeCurrency: targetChain.nativeCurrency,
+          rpcUrls: targetChain.rpcUrls.default.http,
+          blockExplorerUrls: [targetChain.blockExplorers!.default.url],
+        }],
+      });
+    } else {
+      throw err;
+    }
+  }
+}
+
+/** Prompt connection, ensure valid chain, return the connected address. */
 export async function authenticate(): Promise<string | null> {
   const provider = getProvider();
   if (!provider) {
@@ -104,7 +169,7 @@ export async function authenticate(): Promise<string | null> {
   }
   const accounts = (await provider.request({ method: 'eth_requestAccounts' })) as string[];
   if (!accounts?.length) return null;
-  await ensureBotChain(provider);
+  await ensureSupportedChain(provider);
   return accounts[0];
 }
 
