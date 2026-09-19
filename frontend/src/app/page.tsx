@@ -2,11 +2,21 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useI18n } from '@/lib/LanguageContext';
-import { SETTLEMENT_SYMBOL, NETWORK_LABEL, isMainnet } from '@/lib/userSession';
+import { SETTLEMENT_SYMBOL, NETWORK_LABEL, isMainnet, switchNetwork } from '@/lib/userSession';
+import NetworkSelectModal from '@/components/NetworkSelectModal';
 
 export default function Home() {
   const { t } = useI18n();
+  const router = useRouter();
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
+
+  const handleNetworkSelect = async (chainId: number) => {
+    setIsModalOpen(false);
+    await switchNetwork(chainId);
+    router.push('/app');
+  };
 
   return (
     <div style={{ paddingBottom: 60, position: 'relative' }}>
@@ -66,11 +76,9 @@ export default function Home() {
             <span className="hero-chip">{t.recursiveDelegation}</span>
             <span className="hero-chip">{t.paymentsVerified}</span>
             
-            <Link href="/app" style={{ textDecoration: 'none' }}>
-              <button className="hero-btn">
-                Launch App
-              </button>
-            </Link>
+            <button className="hero-btn" onClick={() => setIsModalOpen(true)}>
+              Launch App
+            </button>
           </div>
         </div>
       </section>
@@ -170,6 +178,11 @@ export default function Home() {
         </div>
       </section>
 
+      <NetworkSelectModal 
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSelect={handleNetworkSelect}
+      />
     </div>
   );
 }

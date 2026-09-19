@@ -1,11 +1,13 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { authenticate, getConnectedAddress, sign_out, getProvider } from '../lib/userSession';
+import { authenticate, getConnectedAddress, sign_out, getProvider, switchNetwork } from '../lib/userSession';
+import NetworkSelectModal from './NetworkSelectModal';
 
 export default function ConnectWalletButton() {
   const [mounted, setMounted] = useState(false);
   const [address, setAddress] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -62,10 +64,7 @@ export default function ConnectWalletButton() {
 
   return (
     <button
-      onClick={async () => {
-        const addr = await authenticate();
-        if (addr) setAddress(addr);
-      }}
+      onClick={() => setIsModalOpen(true)}
       style={{
         padding: '8px 16px',
         borderRadius: 8,
@@ -88,6 +87,19 @@ export default function ConnectWalletButton() {
       }}
     >
       Connect Wallet
+      
+      <NetworkSelectModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSelect={async (chainId) => {
+          setIsModalOpen(false);
+          const addr = await authenticate();
+          if (addr) {
+            await switchNetwork(chainId);
+            setAddress(addr);
+          }
+        }}
+      />
     </button>
   );
 }
