@@ -23,7 +23,7 @@ import {
   type Address,
   type Hash,
 } from 'viem';
-import { activeChain, getProvider } from './userSession';
+import { getProvider, getConnectedChainId, supportedChains, defaultChain } from './userSession';
 
 // ── Deployed contract addresses (BOT mainnet by default) ───────────────────
 // Overridable via env for mainnet / redeploys.
@@ -80,21 +80,29 @@ const REGISTRY_ABI = [
 
 // ── Clients ─────────────────────────────────────────────────────────────────
 
-function publicClient() {
-  return createPublicClient({ chain: activeChain, transport: http() });
+async function getActiveChain() {
+  const chainId = await getConnectedChainId();
+  return supportedChains.find(c => c.id === chainId) || defaultChain;
 }
 
-function walletClient() {
+async function publicClient() {
+  const chain = await getActiveChain();
+  return createPublicClient({ chain, transport: http() });
+}
+
+async function walletClient() {
   const provider = getProvider();
   if (!provider) throw new Error('No wallet found. Install MetaMask to pay for agents.');
-  return createWalletClient({ chain: activeChain, transport: custom(provider as any) });
+  const chain = await getActiveChain();
+  return createWalletClient({ chain, transport: custom(provider as any) });
 }
 
 // ── Reads ─────────────────────────────────────────────────────────────────
 
 /** USDC balance of an address, in human units (e.g. 12.5). */
 export async function getUsdcBalance(owner: Address): Promise<number> {
-  const bal = await publicClient().readContract({
+  const client = await publicClient();
+  const bal = await client.readContract({
     address: USDC_ADDRESS, abi: ERC20_ABI, functionName: 'balanceOf', args: [owner],
   });
   return Number(bal) / 10 ** USDC_DECIMALS;
@@ -102,7 +110,8 @@ export async function getUsdcBalance(owner: Address): Promise<number> {
 
 /** Current allowance the user has granted the registry, in human units. */
 export async function getAllowance(owner: Address): Promise<number> {
-  const a = await publicClient().readContract({
+  const client = await publicClient();
+  const a = await client.readContract({
     address: USDC_ADDRESS, abi: ERC20_ABI, functionName: 'allowance', args: [owner, REGISTRY_ADDRESS],
   });
   return Number(a) / 10 ** USDC_DECIMALS;
@@ -110,7 +119,8 @@ export async function getAllowance(owner: Address): Promise<number> {
 
 /** An agent's on-chain price (human units) — the exact amount that will be escrowed. */
 export async function getAgentPrice(worker: Address): Promise<number> {
-  const agent = await publicClient().readContract({
+  const client = await publicClient();
+  const agent = await client.readContract({
     address: REGISTRY_ADDRESS, abi: REGISTRY_ABI, functionName: 'getAgent', args: [worker],
   }) as { price: bigint; exists: boolean };
   if (!agent.exists) throw new Error('That agent is not registered on-chain.');
@@ -129,7 +139,7 @@ export async function approveUsdcIfNeeded(owner: Address, amountNeeded: number):
   const current = await getAllowance(owner);
   if (current >= amountNeeded) return null;
 
-  const wallet = walletClient();
+  const wallet = await walletClient();
   const hash = await wallet.writeContract({
     account: owner,
     address: USDC_ADDRESS,
@@ -137,7 +147,8 @@ export async function approveUsdcIfNeeded(owner: Address, amountNeeded: number):
     functionName: 'approve',
     args: [REGISTRY_ADDRESS, maxUint256],
   });
-  await publicClient().waitForTransactionReceipt({ hash });
+  const client = await publicClient();
+  await client.waitForTransactionReceipt({ hash });
   return hash;
 }
 
@@ -168,7 +179,7 @@ export async function hireAgent(params: {
 
   await approveUsdcIfNeeded(owner, price);
 
-  const wallet = walletClient();
+  const wallet = await walletClient();
   const txHash = await wallet.writeContract({
     account: owner,
     address: REGISTRY_ADDRESS,
@@ -177,7 +188,8 @@ export async function hireAgent(params: {
     args: [worker, category, parentJobId],
   });
 
-  const receipt = await publicClient().waitForTransactionReceipt({ hash: txHash });
+  const client = await publicClient();
+  const receipt = await client.waitForTransactionReceipt({ hash: txHash });
 
   // Parse jobId from the JobCreated event.
   let jobId = 0n;
@@ -193,17 +205,18 @@ export async function hireAgent(params: {
     }
   }
 
+  const chain = await getActiveChain();
   return {
     jobId,
     txHash,
     amountUsdc: price,
-    explorerUrl: `${activeChain.blockExplorers!.default.url}/tx/${txHash}`,
+    explorerUrl: `${chain.blockExplorers!.default.url}/tx/${txHash}`,
   };
 }
 
 /** User-initiated dispute if a worker never delivered (parks the escrow). */
 export async function disputeJob(owner: Address, jobId: bigint): Promise<Hash> {
-  const wallet = walletClient();
+  const wallet = await walletClient();
   const hash = await wallet.writeContract({
     account: owner,
     address: REGISTRY_ADDRESS,
@@ -211,6 +224,7 @@ export async function disputeJob(owner: Address, jobId: bigint): Promise<Hash> {
     functionName: 'disputeJob',
     args: [jobId],
   });
-  await publicClient().waitForTransactionReceipt({ hash });
+  const client = await publicClient();
+  await client.waitForTransactionReceipt({ hash });
   return hash;
 }
