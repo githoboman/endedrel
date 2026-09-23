@@ -533,7 +533,7 @@ function createPaidRoute(config: PriceConfig) {
         fromAddress: payer,
         amountWei: usdcToBaseUnits(config),
         tokenSymbol: 'USDC',
-        tokenContract: process.env.USDC_ADDRESS || undefined,
+        tokenContract: process.env.USDT_ADDRESS || process.env.USDC_ADDRESS || undefined,
       });
 
       // A 402 (payment required) is expected on create, but we still need an

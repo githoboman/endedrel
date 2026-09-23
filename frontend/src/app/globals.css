@@ -532,6 +532,14 @@ body {
   padding-bottom: calc(40px + env(safe-area-inset-bottom));
 }
 
+/* ── Dashboard Layout ── */
+.dashboard-layout {
+  display: flex;
+  gap: 40px;
+  padding: 40px 0 80px 0;
+  align-items: flex-start;
+}
+
 /* ── Global overflow guards ──
    A single overflowing child creates a body-wide horizontal scroll that makes
    an app feel broken. These stop that at the source. */
@@ -555,6 +563,17 @@ table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
   .responsive-2col { grid-template-columns: 1fr !important; gap: 28px !important; }
   /* Docs sidebar stacks above content instead of squeezing it. */
   .responsive-sidebar { grid-template-columns: 1fr !important; gap: 20px !important; }
+
+  /* Dashboard mobile layout */
+  .dashboard-layout {
+    flex-direction: column;
+    gap: 24px !important;
+    padding: 20px 0 40px 0 !important;
+  }
+  .dashboard-layout > aside {
+    width: 100% !important;
+    position: static !important;
+  }
 }
 
 /* ── Phones ── */

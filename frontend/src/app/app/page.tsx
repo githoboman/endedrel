@@ -51,12 +51,7 @@ export default function AppDashboard() {
   const isBot = chainId === botTestnet.id || chainId === botMainnet.id;
 
   return (
-    <div style={{
-      display: 'flex',
-      gap: '40px',
-      padding: '40px 0 80px 0',
-      alignItems: 'flex-start'
-    }}>
+    <div className="dashboard-layout">
 
       {/* ── SIDEBAR: Network Context ── */}
       <aside style={{
