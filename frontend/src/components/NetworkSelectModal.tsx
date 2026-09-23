@@ -1,5 +1,5 @@
 import React from 'react';
-import { botTestnet, goatTestnet } from '@/lib/userSession';
+import { botMainnet } from '@/lib/userSession';
 
 export default function NetworkSelectModal({ 
   isOpen, 
@@ -62,7 +62,7 @@ export default function NetworkSelectModal({
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <button 
             onClick={() => {
-              onSelect(botTestnet.id);
+              onSelect(botMainnet.id);
             }}
             style={{
               padding: '20px',
@@ -96,41 +96,6 @@ export default function NetworkSelectModal({
             </span>
           </button>
 
-          <button 
-            onClick={() => {
-              onSelect(goatTestnet.id);
-            }}
-            style={{
-              padding: '20px',
-              background: '#f3e8ff',
-              border: '2px solid #8b5cf6',
-              color: '#8b5cf6',
-              borderRadius: 'var(--radius-sm)',
-              fontWeight: 800,
-              fontSize: '1.1rem',
-              fontFamily: 'var(--font-mono)',
-              cursor: 'pointer',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: '8px',
-              transition: 'all 0.2s ease',
-              boxShadow: '0 4px 12px rgba(139, 92, 246, 0.15)'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 6px 16px rgba(139, 92, 246, 0.25)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 4px 12px rgba(139, 92, 246, 0.15)';
-            }}
-          >
-            GOAT NETWORK
-            <span style={{ fontSize: '0.8rem', fontWeight: 500, color: 'rgba(139, 92, 246, 0.8)' }}>
-              Bitcoin-Secured (BTC)
-            </span>
-          </button>
         </div>
       </div>
     </div>

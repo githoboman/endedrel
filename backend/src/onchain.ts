@@ -41,23 +41,7 @@ const botChain = defineChain({
   blockExplorers: { default: { name: 'BOTScan', url: EXPLORER } },
 });
 
-const goatMainnet = defineChain({
-  id: 2345,
-  name: 'GOAT Network',
-  nativeCurrency: { name: 'BTC', symbol: 'BTC', decimals: 18 },
-  rpcUrls: { default: { http: [process.env.GOAT_MAINNET_RPC || 'https://rpc.goat.network'] } },
-  blockExplorers: { default: { name: 'GOATScan', url: 'https://explorer.goat.network' } },
-});
-
-const goatTestnet = defineChain({
-  id: 248, // PLACEHOLDER for Testnet3
-  name: 'GOAT Network Testnet',
-  nativeCurrency: { name: 'BTC', symbol: 'BTC', decimals: 18 },
-  rpcUrls: { default: { http: [process.env.GOAT_TESTNET_RPC || 'https://rpc.testnet.goat.network'] } },
-  blockExplorers: { default: { name: 'GOATScan', url: 'https://explorer.testnet.goat.network' } },
-});
-
-const supportedChains = [botChain, goatMainnet, goatTestnet];
+const supportedChains = [botChain];
 
 function getChainConfig(chainId?: number) {
   if (!chainId) return { chain: botChain, rpcUrl: RPC_URL, explorer: EXPLORER };

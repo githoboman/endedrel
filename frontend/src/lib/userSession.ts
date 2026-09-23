@@ -38,29 +38,8 @@ export const botMainnet = defineChain({
   },
 });
 
-export const goatTestnet = defineChain({
-  id: 248, // PLACEHOLDER for Testnet3
-  name: 'GOAT Network Testnet',
-  nativeCurrency: { name: 'BTC', symbol: 'BTC', decimals: 18 },
-  rpcUrls: { default: { http: ['https://rpc.testnet.goat.network'] } },
-  blockExplorers: {
-    default: { name: 'GOATScan', url: 'https://explorer.testnet.goat.network' },
-  },
-  testnet: true,
-});
-
-export const goatMainnet = defineChain({
-  id: 2345,
-  name: 'GOAT Network',
-  nativeCurrency: { name: 'BTC', symbol: 'BTC', decimals: 18 },
-  rpcUrls: { default: { http: ['https://rpc.goat.network'] } },
-  blockExplorers: {
-    default: { name: 'GOATScan', url: 'https://explorer.goat.network' },
-  },
-});
-
-export const supportedChains = [botMainnet, botTestnet, goatTestnet];
-export const defaultChain = NETWORK === 'mainnet' ? botMainnet : botTestnet;
+export const supportedChains = [botMainnet, botTestnet];
+export const defaultChain = botMainnet;
 
 /** True when pointing at BOT Chain mainnet (real value). */
 export const isMainnet = NETWORK === 'mainnet';
@@ -104,14 +83,19 @@ export async function getConnectedChainId(): Promise<number | null> {
   }
 }
 
-/** Ensure the wallet is on a supported chain; switch to default if unknown. */
-async function ensureSupportedChain(provider: Eip1193Provider): Promise<void> {
+/** Ensure the wallet is on a supported chain; optionally target a specific chain. */
+async function ensureSupportedChain(provider: Eip1193Provider, preferredChainId?: number): Promise<void> {
   const currentId = await getConnectedChainId();
-  if (currentId && supportedChains.some((c) => c.id === currentId)) {
+  
+  if (preferredChainId && currentId === preferredChainId) {
+    return;
+  }
+  if (!preferredChainId && currentId && supportedChains.some((c) => c.id === currentId)) {
     return; // Already on a supported chain
   }
   
-  const hexId = toHexChainId(defaultChain.id);
+  const targetChain = preferredChainId ? supportedChains.find(c => c.id === preferredChainId) || defaultChain : defaultChain;
+  const hexId = toHexChainId(targetChain.id);
   try {
     await provider.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: hexId }] });
   } catch (err: unknown) {
@@ -121,10 +105,10 @@ async function ensureSupportedChain(provider: Eip1193Provider): Promise<void> {
         method: 'wallet_addEthereumChain',
         params: [{
           chainId: hexId,
-          chainName: defaultChain.name,
-          nativeCurrency: defaultChain.nativeCurrency,
-          rpcUrls: defaultChain.rpcUrls.default.http,
-          blockExplorerUrls: [defaultChain.blockExplorers!.default.url],
+          chainName: targetChain.name,
+          nativeCurrency: targetChain.nativeCurrency,
+          rpcUrls: targetChain.rpcUrls.default.http,
+          blockExplorerUrls: [targetChain.blockExplorers!.default.url],
         }],
       });
     } else {
@@ -161,7 +145,7 @@ export async function switchNetwork(chainId: number): Promise<void> {
 }
 
 /** Prompt connection, ensure valid chain, return the connected address. */
-export async function authenticate(): Promise<string | null> {
+export async function authenticate(preferredChainId?: number): Promise<string | null> {
   const provider = getProvider();
   if (!provider) {
     alert('No EVM wallet found. Install MetaMask or another injected wallet to connect.');
@@ -169,7 +153,7 @@ export async function authenticate(): Promise<string | null> {
   }
   const accounts = (await provider.request({ method: 'eth_requestAccounts' })) as string[];
   if (!accounts?.length) return null;
-  await ensureSupportedChain(provider);
+  await ensureSupportedChain(provider, preferredChainId);
   return accounts[0];
 }
 

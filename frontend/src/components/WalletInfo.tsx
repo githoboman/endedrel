@@ -69,9 +69,8 @@ export default function WalletInfo() {
 
   const activeChain = supportedChains.find(c => c.id === chainId) || defaultChain;
   
-  const isGoat = activeChain.name.toLowerCase().includes('goat');
-  const badgeColor = isGoat ? '#8b5cf6' : '#ff4f00';
-  const badgeBg = isGoat ? '#f3e8ff' : '#fff1eb';
+  const badgeColor = '#ff4f00';
+  const badgeBg = '#fff1eb';
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>

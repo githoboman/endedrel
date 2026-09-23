@@ -7,7 +7,7 @@ import TransactionLog from '@/components/TransactionLog';
 import ToolCatalog from '@/components/ToolCatalog';
 import ProtocolTrace from '@/components/ProtocolTrace';
 import { useI18n } from '@/lib/LanguageContext';
-import { SETTLEMENT_SYMBOL, getConnectedChainId, switchNetwork, getProvider, botTestnet, goatTestnet, botMainnet } from '@/lib/userSession';
+import { SETTLEMENT_SYMBOL, getConnectedChainId, switchNetwork, getProvider, botTestnet, botMainnet } from '@/lib/userSession';
 
 export default function AppDashboard() {
   const { language, t } = useI18n();
@@ -49,7 +49,6 @@ export default function AppDashboard() {
   };
 
   const isBot = chainId === botTestnet.id || chainId === botMainnet.id;
-  const isGoat = chainId === goatTestnet.id || chainId === 2345;
 
   return (
     <div style={{
@@ -96,27 +95,7 @@ export default function AppDashboard() {
             {isBot && <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#ff4f00' }} />}
           </button>
 
-          <button 
-            onClick={() => switchNetwork(goatTestnet.id)}
-            style={{
-              padding: '12px 16px',
-              background: isGoat ? '#f3e8ff' : 'var(--bg-secondary)',
-              border: `2px solid ${isGoat ? '#8b5cf6' : 'var(--border-subtle)'}`,
-              color: isGoat ? '#8b5cf6' : 'var(--text-secondary)',
-              borderRadius: 'var(--radius-sm)',
-              fontWeight: 800,
-              fontFamily: 'var(--font-mono)',
-              cursor: 'pointer',
-              textAlign: 'left',
-              transition: 'all 0.2s ease',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between'
-            }}
-          >
-            GOAT NETWORK
-            {isGoat && <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#8b5cf6' }} />}
-          </button>
+
 
           <div style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', marginTop: '10px', lineHeight: 1.5 }}>
             Switching contexts will prompt your wallet to change networks. Current settlement asset: <strong>{SETTLEMENT_SYMBOL}</strong>.

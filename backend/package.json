@@ -18,7 +18,6 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@goatnetwork/agentkit": "^0.2.3",
     "@google/generative-ai": "^0.24.1",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",

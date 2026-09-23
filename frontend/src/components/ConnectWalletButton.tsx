@@ -63,8 +63,9 @@ export default function ConnectWalletButton() {
   }
 
   return (
-    <button
-      onClick={() => setIsModalOpen(true)}
+    <>
+      <button
+        onClick={() => setIsModalOpen(true)}
       style={{
         padding: '8px 16px',
         borderRadius: 8,
@@ -87,19 +88,17 @@ export default function ConnectWalletButton() {
       }}
     >
       Connect Wallet
+    </button>
       
       <NetworkSelectModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSelect={async (chainId) => {
           setIsModalOpen(false);
-          const addr = await authenticate();
-          if (addr) {
-            await switchNetwork(chainId);
-            setAddress(addr);
-          }
+          const addr = await authenticate(chainId);
+          if (addr) setAddress(addr);
         }}
       />
-    </button>
+    </>
   );
 }

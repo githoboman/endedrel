@@ -102,19 +102,22 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Resources Column */}
+        {/* Partnerships Column */}
         <div className="nav-col">
-          <h4 className="mono section-title">RESOURCES</h4>
+          <h4 className="mono section-title">PARTNERSHIPS</h4>
           <div className="links">
-            {resourceLinks.map((link) => (link.path.startsWith('/') ? (
-              <Link key={link.name} href={link.path} className="link">
-                {link.name}
-              </Link>
-            ) : (
-              <a key={link.name} href={link.path} className="link" target="_blank" rel="noopener noreferrer">
-                {link.name}
-              </a>
-            )))}
+            <a href="https://botchain.ai" className="link" target="_blank" rel="noopener noreferrer">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ width: 16, height: 16, borderRadius: '50%', background: '#ff4f00' }} />
+                <span>BOT Chain</span>
+              </div>
+            </a>
+            <a href="https://scan.botchain.ai" className="link" target="_blank" rel="noopener noreferrer">
+              BOTScan Explorer
+            </a>
+            <a href="https://x402.org" className="link" target="_blank" rel="noopener noreferrer">
+              x402 Protocol
+            </a>
           </div>
         </div>
 
